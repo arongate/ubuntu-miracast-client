@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: ubuntu-miracast-client-dev
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=:0
+      - PYTHONPATH=/workspace
+    working_dir: /workspace
+    command: sleep infinity

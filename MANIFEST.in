@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include CONTRIBUTING.md
+include pyproject.toml
+recursive-include data *
+recursive-include docs *.md
+recursive-exclude tests *
+recursive-exclude debian *
+recursive-exclude .github *
+recursive-exclude .devcontainer *

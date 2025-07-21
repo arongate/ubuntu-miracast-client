@@ -1,0 +1,41 @@
+Source: ubuntu-miracast-client
+Section: video
+Priority: optional
+Maintainer: Ubuntu Miracast Team <example@example.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+               python3-gi,
+               python3-cairo,
+               python3-gst-1.0
+Standards-Version: 4.6.0
+Homepage: https://github.com/yourusername/ubuntu-miracast-client
+Rules-Requires-Root: no
+X-Python3-Version: >= 3.10
+
+Package: ubuntu-miracast-client
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3-gi,
+         python3-cairo,
+         python3-gst-1.0,
+         gir1.2-gtk-4.0,
+         gir1.2-adw-1,
+         gir1.2-gstreamer-1.0,
+         gir1.2-gst-plugins-base-1.0,
+         wpasupplicant
+Description: Miracast client for Ubuntu
+ Ubuntu Miracast Client is a desktop application that allows
+ Ubuntu users to wirelessly cast their screen or specific
+ applications to Miracast-compatible receivers such as smart TVs,
+ wireless display adapters, and other devices that support the
+ Miracast protocol.
+ .
+ Features:
+  * Cast your entire screen or specific applications
+  * Discover Miracast receivers on your network
+  * View casting session statistics
+  * Session history tracking
+  * Optional system service mode

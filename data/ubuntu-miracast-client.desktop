@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Ubuntu Miracast Client
+Comment=Cast your screen to Miracast devices
+Exec=ubuntu-miracast-client
+Icon=ubuntu-miracast-client
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;Network;GTK;
+Keywords=screencast;miracast;cast;wireless;display;
+StartupNotify=true

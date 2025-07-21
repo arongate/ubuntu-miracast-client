@@ -1,0 +1,38 @@
+{
+    "name": "Ubuntu Miracast Client Dev",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "ms-python.flake8",
+                "matangover.mypy"
+            ],
+            "settings": {
+                "python.linting.enabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.formatting.provider": "black",
+                "editor.formatOnSave": true,
+                "python.testing.pytestEnabled": true,
+                "python.testing.unittestEnabled": false,
+                "python.testing.nosetestsEnabled": false,
+                "python.testing.pytestArgs": [
+                    "tests"
+                ]
+            }
+        }
+    },
+    "runArgs": [
+        "--env-file", ".devcontainer/devcontainer.env"
+    ],
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+    ],
+    "remoteUser": "dev",
+    "postCreateCommand": "pip install -e '.[dev]'"
+}
