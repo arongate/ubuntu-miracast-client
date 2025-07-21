@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-gi python3-cairo python3-gst-1.0 gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 wpasupplicant
+        sudo apt-get install -y build-essential debhelper dh-python fakeroot lintian
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+        pip install build twine
+    
+    - name: Extract version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+    
+    - name: Build Python package
+      run: |
+        python -m build
+    
+    - name: Build Debian package
+      run: |
+        chmod +x debian/rules
+        chmod +x debian/ubuntu-miracast-client.postinst
+        chmod +x debian/ubuntu-miracast-client.postrm
+        dpkg-buildpackage -us -uc -b
+        mkdir -p dist/deb
+        cp ../ubuntu-miracast-client_*.deb dist/deb/
+    
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release v${{ env.VERSION }}
+        draft: false
+        prerelease: false
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+          dist/deb/*.deb
+        body: |
+          # Ubuntu Miracast Client v${{ env.VERSION }}
+          
+          ## Installation
+          
+          ### From Debian Package
+          ```bash
+          sudo apt install ./ubuntu-miracast-client_${{ env.VERSION }}_amd64.deb
+          ```
+          
+          ### From Python Package
+          ```bash
+          pip install ubuntu-miracast-client==${{ env.VERSION }}
+          ```
+          
+          ## Changes
+          
+          See the [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.

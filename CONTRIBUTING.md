@@ -66,6 +66,9 @@ pip install -e ".[dev]"
 
 # Run tests with coverage report
 ./scripts/test.sh --coverage
+
+# Or use Make
+make test
 ```
 
 ### Building the Package
@@ -76,7 +79,25 @@ pip install -e ".[dev]"
 
 # Build Debian package
 ./scripts/build.sh --deb
+
+# Or use Make
+make package  # Python package
+make deb      # Debian package
 ```
+
+### Using Make
+
+The project includes a Makefile for common development tasks:
+
+```bash
+make        # Build the application
+make test    # Run tests
+make lint    # Run linting checks
+make docs    # Generate documentation
+make clean   # Clean build artifacts
+```
+
+Run `make help` to see all available targets.
 
 ## Pull Request Process
 

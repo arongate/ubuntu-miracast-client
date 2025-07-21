@@ -1,0 +1,51 @@
+digraph "Ubuntu Miracast Client Architecture" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Ubuntu Miracast Client Architecture" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"9b978c6a7ff247dc8049391c81a0735d" [label=User height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/onprem/client/user.png" shape=none]
+	subgraph "cluster_Ubuntu Miracast Client" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Ubuntu Miracast Client" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_UI Layer" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="UI Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"60e3bd6f71624cf8bfe8e2dae8ce39f0" [label="GTK4 UI" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			adfe8d3a4bf94917a54d362e2b213723 [label="Source Selector" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			a0495c15a42d4835872f12199c62a5a0 [label="Device Selector" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			"19b6b2a11b804231869ce68320264c0c" [label="History View" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			"588c276728834b32a68ed2565c0eb6b4" [label="Settings View" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+		}
+		subgraph "cluster_Core Components" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Core Components" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"80dc72dba7df469bb26bc03ee0ff5f99" [label="Discovery Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			"57a49eb0a37f433aa279f5f86bac6e0c" [label="Capture Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			"7edc0931ce8241ac9a56bb0a7b907b29" [label="Casting Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			aa84cfc4032d4a3288b0fde4dd9062f8 [label="History Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			"9907ca0549da4872ba30ad56a0a739cd" [label="Config Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			a9d24fe762f641f894972f04a414ab44 [label="Service Module" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+		}
+		subgraph "cluster_System Integration" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="System Integration" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			b85c53abd7d64bc98f911f0b9fc53579 [label="Systemd Service" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+			a9e4204e98264f9d86fbf7f0e3e04e8c [label=Logging height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/programming/framework/flask.png" shape=none]
+		}
+	}
+	subgraph cluster_Network {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label=Network labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		fc498d29d1b744eabdd2a05845d54f40 [label="Miracast Devices" height=1.9 image="/home/epepy/.cache/uv/archive-v0/LD_ZiF_00PcakcoPweYCD/lib/python3.12/site-packages/resources/generic/device/mobile.png" shape=none]
+	}
+	"9b978c6a7ff247dc8049391c81a0735d" -> "60e3bd6f71624cf8bfe8e2dae8ce39f0" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"60e3bd6f71624cf8bfe8e2dae8ce39f0" -> adfe8d3a4bf94917a54d362e2b213723 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"60e3bd6f71624cf8bfe8e2dae8ce39f0" -> a0495c15a42d4835872f12199c62a5a0 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"60e3bd6f71624cf8bfe8e2dae8ce39f0" -> "19b6b2a11b804231869ce68320264c0c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"60e3bd6f71624cf8bfe8e2dae8ce39f0" -> "588c276728834b32a68ed2565c0eb6b4" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	adfe8d3a4bf94917a54d362e2b213723 -> "57a49eb0a37f433aa279f5f86bac6e0c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	a0495c15a42d4835872f12199c62a5a0 -> "80dc72dba7df469bb26bc03ee0ff5f99" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"19b6b2a11b804231869ce68320264c0c" -> aa84cfc4032d4a3288b0fde4dd9062f8 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"588c276728834b32a68ed2565c0eb6b4" -> "9907ca0549da4872ba30ad56a0a739cd" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"588c276728834b32a68ed2565c0eb6b4" -> a9d24fe762f641f894972f04a414ab44 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	a9d24fe762f641f894972f04a414ab44 -> b85c53abd7d64bc98f911f0b9fc53579 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"57a49eb0a37f433aa279f5f86bac6e0c" -> a9e4204e98264f9d86fbf7f0e3e04e8c [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"80dc72dba7df469bb26bc03ee0ff5f99" -> a9e4204e98264f9d86fbf7f0e3e04e8c [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7edc0931ce8241ac9a56bb0a7b907b29" -> a9e4204e98264f9d86fbf7f0e3e04e8c [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"80dc72dba7df469bb26bc03ee0ff5f99" -> fc498d29d1b744eabdd2a05845d54f40 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7edc0931ce8241ac9a56bb0a7b907b29" -> fc498d29d1b744eabdd2a05845d54f40 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}

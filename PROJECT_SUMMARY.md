@@ -100,19 +100,23 @@ The application follows a modular architecture with the following components:
 1. **Development Environment**:
    - Dev container with all required dependencies
    - Docker Compose configuration for easy setup
+   - GNU Make for common development tasks
 
 2. **Testing**:
    - Unit tests with pytest
    - Coverage reporting
+   - Automated CI with GitHub Actions
 
 3. **Building**:
    - Python package building
    - Debian package building
+   - Make targets for common build tasks
 
 4. **Release Process**:
    - Automated version management
    - Changelog generation
    - Package building
+   - Automated releases with GitHub Actions
 
 ## Security and Reliability
 

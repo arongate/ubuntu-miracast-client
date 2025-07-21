@@ -92,6 +92,35 @@ pytest
 ./scripts/build.sh
 ```
 
+### Using Make
+
+We provide a Makefile for common development tasks:
+
+```bash
+# Build the application
+make
+
+# Run tests
+make test
+
+# Run linting checks
+make lint
+
+# Build Python package
+make package
+
+# Build Debian package
+make deb
+
+# Generate documentation
+make docs
+
+# Clean build artifacts
+make clean
+```
+
+Run `make help` to see all available targets.
+
 ## Contribution Rules
 
 1. Fork the repository
@@ -100,7 +129,23 @@ pytest
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+The CI pipeline will automatically run tests and linting checks on your pull request.
+
 Please make sure your code follows our coding standards and includes appropriate tests.
+
+## Releases
+
+Releases are automatically built and published using GitHub Actions when a new tag is pushed:
+
+```bash
+# Tag a new version
+git tag -a v1.0.1 -m "Release v1.0.1"
+
+# Push the tag
+git push origin v1.0.1
+```
+
+This will trigger the release workflow which builds and publishes Python and Debian packages.
 
 ## License
 
