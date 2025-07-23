@@ -2,6 +2,8 @@
 
 A desktop application for Ubuntu 24.04 LTS that enables screen and application casting to Miracast-compatible devices.
 
+> This project has been boostrapped using Amazon Q developer with Claude Sonnet 3.7 LLM
+
 ## Short Description
 
 Ubuntu Miracast Client is an open-source application that allows Ubuntu users to wirelessly cast their screen or specific applications to Miracast-compatible receivers such as smart TVs, wireless display adapters, and other devices that support the Miracast protocol.
