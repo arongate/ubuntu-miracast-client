@@ -2,6 +2,10 @@
 
 A desktop application for Ubuntu that enables screen and application casting to Miracast-compatible devices.
 
+## ⚠️ Unstable Phase (0.x)
+
+This project is in its initial development phase (`0.x.y`). Per [SemVer §4](https://semver.org/#spec-item-4), the public API is not yet stable — any release may introduce breaking changes. Pin your dependency to an exact version if you rely on this package.
+
 ## Features
 
 - Cast your entire screen or specific application windows
@@ -163,6 +167,20 @@ src/miracast_client/
     ├── history_view.py
     └── settings_view.py
 ```
+
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/) with [Conventional Commits](https://www.conventionalcommits.org/).
+
+| Commit prefix | Version bump | Example |
+|---------------|-------------|---------|
+| `fix:` | Patch (0.0.x) | Bug fix |
+| `feat:` | Minor (0.x.0) | New feature |
+| `feat!:` or `BREAKING CHANGE:` | Minor during 0.x, Major after 1.0 | Breaking change |
+
+**Snapshot builds** are automatically created on every push to `main` and named as the next anticipated release with a dev suffix (e.g., `0.0.2-dev.3`).
+
+**Releases** are triggered manually via `workflow_dispatch` and auto-determine the version bump from commit history.
 
 ## CI/CD
 

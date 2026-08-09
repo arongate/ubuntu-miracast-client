@@ -3,6 +3,10 @@ name: Snapshot Build
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
 
 permissions:
   contents: write
@@ -46,18 +50,16 @@ jobs:
       run: |
         pytest --cov=miracast_client tests/
 
-    - name: Generate snapshot version
+    - name: Compute snapshot version
       id: version
       run: |
-        BASE_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/miracast_client/__init__.py)
-        SHORT_SHA=$(git rev-parse --short HEAD)
-        DATE=$(date +%Y%m%d)
-        SNAPSHOT_VERSION="${BASE_VERSION}.dev${DATE}+g${SHORT_SHA}"
+        # Determine next version from conventional commits
+        SNAPSHOT_VERSION=$(python scripts/release_notes.py next-dev)
         echo "snapshot_version=${SNAPSHOT_VERSION}" >> $GITHUB_OUTPUT
         echo "Snapshot version: ${SNAPSHOT_VERSION}"
 
-        # Patch __init__.py with snapshot version for the build
-        sed -i "s/__version__ = \".*\"/__version__ = \"${SNAPSHOT_VERSION}\"/" src/miracast_client/__init__.py
+        # Patch VERSION for the build
+        echo "${SNAPSHOT_VERSION}" > VERSION
 
     - name: Build Python package
       run: |
@@ -85,8 +87,8 @@ jobs:
     - name: Update snapshot pre-release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: snapshot
-        name: "Snapshot: ${{ steps.version.outputs.snapshot_version }}"
+        tag_name: v${{ steps.version.outputs.snapshot_version }}
+        name: v${{ steps.version.outputs.snapshot_version }}
         prerelease: true
         make_latest: false
         files: |
@@ -94,16 +96,13 @@ jobs:
           dist/*.tar.gz
           dist/deb/*.deb
         body: |
-          # Snapshot Build
+          ## Pre-release: v${{ steps.version.outputs.snapshot_version }}
 
-          **Version:** `${{ steps.version.outputs.snapshot_version }}`
-          **Commit:** ${{ github.sha }}
-          **Date:** ${{ github.event.head_commit.timestamp }}
+          ⚠️ **This is an automated development build from `main`. It may be unstable.**
 
-          This is an automated snapshot build from the `main` branch.
-          It may be unstable — use official releases for production.
+          **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
 
-          ## Install
+          ### Install
 
           ```bash
           pip install ubuntu_miracast_client-${{ steps.version.outputs.snapshot_version }}-py3-none-any.whl

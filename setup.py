@@ -10,14 +10,9 @@ readme_path = Path(__file__).parent / "README.md"
 with open(readme_path, encoding="utf-8") as f:
     long_description = f.read()
 
-# Get version from package
-with open(Path(__file__).parent / "src" / "miracast_client" / "__init__.py") as f:
-    for line in f:
-        if line.startswith("__version__"):
-            version = line.split("=")[1].strip().strip('"').strip("'")
-            break
-    else:
-        version = "0.0.1"
+# Get version from VERSION file
+with open(Path(__file__).parent / "VERSION") as f:
+    version = f.read().strip()
 
 setup(
     name="ubuntu-miracast-client",
