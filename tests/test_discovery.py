@@ -45,14 +45,15 @@ class TestMiracastDiscovery(unittest.TestCase):
     
     def setUp(self):
         """Set up test environment."""
-        # Create a MiracastDiscovery instance with mocked threading
-        with patch('miracast_client.discovery.threading'):
-            self.discovery = MiracastDiscovery()
+        # Create a MiracastDiscovery instance without patching threading
+        # (patching the whole module breaks GObject initialization)
+        self.discovery = MiracastDiscovery()
     
-    def test_start_discovery(self):
+    @patch('miracast_client.discovery.threading.Thread')
+    def test_start_discovery(self, mock_thread_class):
         """Test starting discovery."""
-        # Mock the thread
-        self.discovery._thread = MagicMock()
+        mock_thread = MagicMock()
+        mock_thread_class.return_value = mock_thread
         
         # Connect to the discovery-started signal
         self.discovery.connect("discovery-started", self._on_discovery_started)
@@ -65,16 +66,20 @@ class TestMiracastDiscovery(unittest.TestCase):
         self.assertTrue(self.discovery._running)
         
         # Check that the thread was started
-        self.discovery._thread.start.assert_called_once()
+        mock_thread.start.assert_called_once()
         
         # Check that the signal was emitted
         self.assertTrue(self.signal_received)
+        
+        # Clean up
+        self.discovery._running = False
     
     def test_stop_discovery(self):
         """Test stopping discovery."""
         # Set up running discovery
         self.discovery._running = True
-        self.discovery._thread = MagicMock()
+        mock_thread = MagicMock()
+        self.discovery._thread = mock_thread
         
         # Connect to the discovery-stopped signal
         self.discovery.connect("discovery-stopped", self._on_discovery_stopped)
@@ -86,8 +91,8 @@ class TestMiracastDiscovery(unittest.TestCase):
         # Check that discovery is not running
         self.assertFalse(self.discovery._running)
         
-        # Check that the thread was joined
-        self.discovery._thread.join.assert_called_once()
+        # Check that the thread was joined (use our reference since stop sets _thread to None)
+        mock_thread.join.assert_called_once()
         
         # Check that the signal was emitted
         self.assertTrue(self.signal_received)

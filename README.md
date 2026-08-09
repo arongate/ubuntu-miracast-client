@@ -1,159 +1,178 @@
 # Ubuntu Miracast Client
 
-A desktop application for Ubuntu 24.04 LTS that enables screen and application casting to Miracast-compatible devices.
-
-> This project has been boostrapped using Amazon Q developer with Claude Sonnet 3.7 LLM
-
-## Short Description
-
-Ubuntu Miracast Client is an open-source application that allows Ubuntu users to wirelessly cast their screen or specific applications to Miracast-compatible receivers such as smart TVs, wireless display adapters, and other devices that support the Miracast protocol.
+A desktop application for Ubuntu that enables screen and application casting to Miracast-compatible devices.
 
 ## Features
 
-- Cast your entire screen or specific applications
-- Discover Miracast receivers on your network
-- View casting session statistics
-- Session history tracking
-- Optional system service mode
-- Secure and fault-tolerant implementation
+- Cast your entire screen or specific application windows
+- Discover Miracast receivers on your network via Wi-Fi Direct
+- Real-time casting session statistics (bitrate, data transferred, dropped frames)
+- Session history tracking with detailed statistics
+- Optional systemd user service mode
+- Modern GTK 4 + libadwaita interface
+- Configurable video quality, frame rate, and audio streaming
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Ubuntu 24.04 LTS (or compatible Linux distribution)
+- Python 3.10 or higher
+- Network connection (5GHz Wi-Fi recommended for optimal performance)
 
-- Ubuntu 24.04 LTS
-- Python 3.12 or higher
-- Network connection (preferably 5GHz WiFi for optimal performance)
+### System Dependencies
 
-### Installation
+```bash
+sudo apt install python3-gi python3-cairo python3-gst-1.0 \
+    gir1.2-gtk-4.0 gir1.2-adw-1 \
+    gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
+    wpasupplicant
+```
 
-#### From Debian Package
+## Installation
+
+### From Debian Package
 
 ```bash
 sudo apt install ./ubuntu-miracast-client_1.0.0_amd64.deb
 ```
 
-#### From Source
+### From Source (using uv)
 
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/ubuntu-miracast-client.git
 cd ubuntu-miracast-client
 
-# Using the development container (recommended)
-docker-compose up -d dev
-docker exec -it ubuntu-miracast-client-dev bash
-./scripts/build.sh
+# Create virtual environment with access to system GTK/GStreamer bindings
+uv venv .venv --python /usr/bin/python3 --system-site-packages
+source .venv/bin/activate
 
-# Or build directly on your system
-pip install -e .
+# Install dev tools and the project
+uv pip install pytest pytest-cov black isort flake8 mypy
+uv pip install -e . --no-deps
+
+# Run the application
+ubuntu-miracast-client
 ```
 
-### Usage
+## Usage
 
-Launch the application from your applications menu or run:
+Launch from your applications menu or run:
 
 ```bash
 ubuntu-miracast-client
 ```
 
-## Development Process
+### Service Mode
 
-### Using Dev Container
-
-We provide a development container with all necessary tools pre-installed:
+Run as a background service:
 
 ```bash
-# Start the dev container
-docker-compose up -d dev
-
-# Enter the container
-docker exec -it ubuntu-miracast-client-dev bash
-
-# Run tests
-./scripts/test.sh
-
-# Build the package
-./scripts/build.sh
+ubuntu-miracast-client --service
 ```
 
-### Manual Development Setup
+## Development
+
+### Quick Start
 
 ```bash
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate
+# Install system dependencies (Ubuntu/Debian)
+sudo apt install python3-gi python3-cairo python3-gst-1.0 \
+    gir1.2-gtk-4.0 gir1.2-adw-1 \
+    gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
 
-# Install development dependencies
-pip install -e ".[dev]"
+# Set up development environment with uv
+uv venv .venv --python /usr/bin/python3 --system-site-packages
+source .venv/bin/activate
+uv pip install pytest pytest-cov black isort flake8 mypy
+uv pip install -e . --no-deps
+```
 
-# Run tests
-pytest
+### Running Tests
 
-# Build the package
-./scripts/build.sh
+```bash
+# Run all 73 tests
+.venv/bin/python -m pytest tests/ -v
+
+# Run with coverage
+.venv/bin/python -m pytest tests/ --cov=miracast_client --cov-report=html
+
+# Run specific test module
+.venv/bin/python -m pytest tests/test_discovery.py -v
+```
+
+### Test Structure
+
+| Module | Tests | Coverage |
+|--------|-------|----------|
+| `test_capture.py` | 20 | CaptureSource, ScreenSource, WindowSource, get_available_sources |
+| `test_casting.py` | 11 | CastingStats, CastManager lifecycle and validation |
+| `test_config.py` | 6 | Config load/save, defaults, get/set |
+| `test_discovery.py` | 5 | MiracastDevice, MiracastDiscovery signals and lifecycle |
+| `test_history.py` | 11 | SessionRecord serialization, SessionHistory persistence |
+| `test_service.py` | 13 | ServiceManager systemctl operations |
+| `test_integration.py` | 7 | Cross-module interactions |
+
+### Code Quality
+
+```bash
+# Format code
+.venv/bin/python -m black src/ tests/
+.venv/bin/python -m isort src/ tests/
+
+# Lint
+.venv/bin/python -m flake8 src/ tests/
+
+# Type check
+.venv/bin/python -m mypy src/
 ```
 
 ### Using Make
 
-We provide a Makefile for common development tasks:
-
 ```bash
-# Build the application
-make
-
-# Run tests
-make test
-
-# Run linting checks
-make lint
-
-# Build Python package
-make package
-
-# Build Debian package
-make deb
-
-# Generate documentation
-make docs
-
-# Clean build artifacts
-make clean
+make          # Build the application
+make test     # Run tests
+make lint     # Run linting checks
+make package  # Build Python package
+make deb      # Build Debian package
+make clean    # Clean build artifacts
 ```
 
-Run `make help` to see all available targets.
-
-## Contribution Rules
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-The CI pipeline will automatically run tests and linting checks on your pull request.
-
-Please make sure your code follows our coding standards and includes appropriate tests.
-
-## Releases
-
-Releases are automatically built and published using GitHub Actions when a new tag is pushed:
+### Using Dev Container
 
 ```bash
-# Tag a new version
-git tag -a v1.0.1 -m "Release v1.0.1"
-
-# Push the tag
-git push origin v1.0.1
+docker-compose up -d dev
+docker exec -it ubuntu-miracast-client-dev bash
+./scripts/test.sh
 ```
 
-This will trigger the release workflow which builds and publishes Python and Debian packages.
+## Project Structure
+
+```
+src/miracast_client/
+├── __init__.py          # Package root, version
+├── app.py               # Application entry point (Adw.Application)
+├── discovery.py         # Wi-Fi Direct device discovery
+├── capture.py           # Screen/window capture sources
+├── casting.py           # Streaming session management
+├── history.py           # Session history persistence
+├── config.py            # Configuration management (JSON)
+├── service.py           # Systemd service management
+└── ui/
+    ├── main_window.py   # Main window with navigation stack
+    ├── source_selector.py
+    ├── device_selector.py
+    ├── history_view.py
+    └── settings_view.py
+```
+
+## CI/CD
+
+- **CI**: Runs on every push/PR to main. Tests across Python 3.10, 3.11, 3.12 with coverage reporting.
+- **Release**: Triggered by version tags (`v*`). Runs tests → builds packages → publishes to PyPI and creates GitHub Release with Debian package.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and workflow.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- The Miracast protocol specification
-- Contributors and maintainers
+MIT License — see [LICENSE](LICENSE) for details.

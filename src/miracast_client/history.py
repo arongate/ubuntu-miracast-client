@@ -3,10 +3,11 @@
 import json
 import logging
 import os
-from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import List
+
+from gi.repository import GObject
 
 from miracast_client.capture import CaptureSource
 from miracast_client.discovery import MiracastDevice
@@ -15,15 +16,16 @@ from miracast_client.casting import CastingStats
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class SessionRecord:
+class SessionRecord(GObject.Object):
     """Record of a casting session."""
-    
-    source: CaptureSource
-    device: MiracastDevice
-    stats: CastingStats
-    timestamp: datetime
-    
+
+    def __init__(self, source, device, stats, timestamp):
+        super().__init__()
+        self.source = source
+        self.device = device
+        self.stats = stats
+        self.timestamp = timestamp
+
     def to_dict(self):
         """Convert to dictionary for serialization."""
         return {
@@ -52,7 +54,7 @@ class SessionRecord:
             },
             "timestamp": self.timestamp.isoformat()
         }
-    
+
     @classmethod
     def from_dict(cls, data):
         """Create from dictionary."""
@@ -62,7 +64,7 @@ class SessionRecord:
             description=data["source"]["description"],
             icon=data["source"].get("icon", "video-display")
         )
-        
+
         device = MiracastDevice(
             id=data["device"]["id"],
             name=data["device"]["name"],
@@ -70,7 +72,7 @@ class SessionRecord:
             model=data["device"]["model"],
             signal_strength=data["device"]["signal_strength"]
         )
-        
+
         stats = CastingStats(
             start_time=datetime.fromisoformat(data["stats"]["start_time"]),
             end_time=datetime.fromisoformat(data["stats"]["end_time"]) if data["stats"]["end_time"] else None,
@@ -81,7 +83,7 @@ class SessionRecord:
             dropped_frames=data["stats"]["dropped_frames"],
             errors=data["stats"]["errors"]
         )
-        
+
         return cls(
             source=source,
             device=device,

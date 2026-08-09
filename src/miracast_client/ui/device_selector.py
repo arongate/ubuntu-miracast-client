@@ -123,16 +123,17 @@ class DeviceSelector(Gtk.Box):
         
         box.append(text_box)
         list_item.set_child(box)
-        
-        # Store references to widgets
-        list_item.title = title
-        list_item.description = description
     
     def _bind_device_item(self, factory, list_item):
         """Bind data to a device list item."""
         device = list_item.get_item()
-        list_item.title.set_text(device.name)
-        list_item.description.set_text(f"Model: {device.model} | Signal: {device.signal_strength}%")
+        box = list_item.get_child()
+        text_box = box.get_last_child()
+        title = text_box.get_first_child()
+        description = title.get_next_sibling()
+        
+        title.set_text(device.name)
+        description.set_text(f"Model: {device.model} | Signal: {device.signal_strength}%")
     
     def start_discovery(self):
         """Start device discovery."""

@@ -3,22 +3,28 @@
 import gi
 import logging
 import uuid
-from dataclasses import dataclass
 
-gi.require_version('Gdk', '4.0')
-from gi.repository import Gdk, Gio
+gi.require_version('GLib', '2.0')
+from gi.repository import GObject
+
+try:
+    gi.require_version('Gdk', '4.0')
+    from gi.repository import Gdk
+except (ValueError, ImportError):
+    Gdk = None  # Gdk not available (e.g., in headless test environment)
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class CaptureSource:
+class CaptureSource(GObject.Object):
     """Base class for capture sources."""
-    
-    id: str
-    name: str
-    description: str
-    icon: str = "video-display"
+
+    def __init__(self, id, name, description, icon="video-display"):
+        super().__init__()
+        self.id = id
+        self.name = name
+        self.description = description
+        self.icon = icon
 
 
 class ScreenSource(CaptureSource):
@@ -107,11 +113,14 @@ def get_available_sources(screen_only=False, windows_only=False):
     # Get screens/monitors
     if not windows_only:
         try:
-            display = Gdk.Display.get_default()
-            if display:
-                for i in range(display.get_n_monitors()):
-                    monitor = display.get_monitor(i)
-                    sources.append(ScreenSource(i, display, monitor))
+            if Gdk is None:
+                logger.warning("Gdk not available, cannot enumerate screens")
+            else:
+                display = Gdk.Display.get_default()
+                if display:
+                    for i in range(display.get_n_monitors()):
+                        monitor = display.get_monitor(i)
+                        sources.append(ScreenSource(i, display, monitor))
         except Exception as e:
             logger.error(f"Failed to get monitors: {e}")
     

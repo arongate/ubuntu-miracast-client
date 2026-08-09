@@ -5,7 +5,7 @@ import logging
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Gtk, Adw, GObject, Gdk
+from gi.repository import Gtk, Adw, GObject, Gdk, Gio
 
 from miracast_client.capture import ScreenSource, WindowSource, get_available_sources
 
@@ -117,22 +117,23 @@ class SourceSelector(Gtk.Box):
         
         box.append(text_box)
         list_item.set_child(box)
-        
-        # Store references to widgets
-        list_item.icon = icon
-        list_item.title = title
-        list_item.description = description
     
     def _bind_source_item(self, factory, list_item):
         """Bind data to a source list item."""
         source = list_item.get_item()
-        list_item.title.set_text(source.name)
-        list_item.description.set_text(source.description)
+        box = list_item.get_child()
+        icon = box.get_first_child()
+        text_box = box.get_last_child()
+        title = text_box.get_first_child()
+        description = title.get_next_sibling()
+        
+        title.set_text(source.name)
+        description.set_text(source.description)
         
         if hasattr(source, 'icon') and source.icon:
-            list_item.icon.set_from_icon_name(source.icon)
+            icon.set_from_icon_name(source.icon)
         else:
-            list_item.icon.set_from_icon_name("video-display")
+            icon.set_from_icon_name("video-display")
     
     def _load_sources(self):
         """Load available sources based on the selected type."""

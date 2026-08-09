@@ -5,7 +5,6 @@ import logging
 import threading
 import time
 import uuid
-from dataclasses import dataclass
 
 gi.require_version('GLib', '2.0')
 from gi.repository import GObject, GLib
@@ -13,16 +12,17 @@ from gi.repository import GObject, GLib
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class MiracastDevice:
+class MiracastDevice(GObject.Object):
     """Represents a discovered Miracast device."""
-    
-    id: str
-    name: str
-    address: str
-    model: str
-    signal_strength: int
-    
+
+    def __init__(self, id, name, address, model, signal_strength):
+        super().__init__()
+        self.id = id
+        self.name = name
+        self.address = address
+        self.model = model
+        self.signal_strength = signal_strength
+
     @classmethod
     def from_wpa_supplicant_p2p_device(cls, device_info):
         """Create a MiracastDevice from wpa_supplicant P2P device info."""

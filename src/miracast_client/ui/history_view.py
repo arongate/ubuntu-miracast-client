@@ -183,23 +183,24 @@ class HistoryView(Gtk.Box):
         
         box.append(text_box)
         list_item.set_child(box)
-        
-        # Store references to widgets
-        list_item.title = title
-        list_item.subtitle = subtitle
-        list_item.timestamp = timestamp
     
     def _bind_session_item(self, factory, list_item):
         """Bind data to a session list item."""
         session = list_item.get_item()
-        list_item.title.set_text(f"{session.source.name} → {session.device.name}")
+        box = list_item.get_child()
+        text_box = box.get_last_child()
+        title = text_box.get_first_child()
+        subtitle = title.get_next_sibling()
+        timestamp = subtitle.get_next_sibling()
+        
+        title.set_text(f"{session.source.name} → {session.device.name}")
         
         duration_mins = session.stats.duration // 60
         duration_secs = session.stats.duration % 60
-        list_item.subtitle.set_text(f"Duration: {duration_mins}m {duration_secs}s | {self._format_data_size(session.stats.data_transferred)}")
+        subtitle.set_text(f"Duration: {duration_mins}m {duration_secs}s | {self._format_data_size(session.stats.data_transferred)}")
         
         timestamp_str = session.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-        list_item.timestamp.set_text(timestamp_str)
+        timestamp.set_text(timestamp_str)
     
     def refresh(self):
         """Refresh the session list."""
