@@ -5,6 +5,7 @@ import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 import gi
 
@@ -21,7 +22,7 @@ class CastingStats:
     """Statistics for a casting session."""
 
     start_time: datetime
-    end_time: datetime = None
+    end_time: Optional[datetime] = None
     duration: int = 0  # in seconds
     data_transferred: int = 0  # in bytes
     average_bitrate: float = 0  # in bps
