@@ -1,14 +1,15 @@
 """Tests for the capture module."""
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 import gi
-gi.require_version('GLib', '2.0')
+
+gi.require_version("GLib", "2.0")
 from gi.repository import GObject
 
-from miracast_client.capture import CaptureSource, ScreenSource, WindowSource, get_available_sources
 import miracast_client.capture as capture_module
+from miracast_client.capture import CaptureSource, ScreenSource, WindowSource, get_available_sources
 
 
 class TestCaptureSource(unittest.TestCase):
@@ -17,10 +18,7 @@ class TestCaptureSource(unittest.TestCase):
     def test_creation_with_all_fields(self):
         """Test CaptureSource creation with all fields."""
         source = CaptureSource(
-            id="test-1",
-            name="Test Source",
-            description="A test source",
-            icon="custom-icon"
+            id="test-1", name="Test Source", description="A test source", icon="custom-icon"
         )
         self.assertEqual(source.id, "test-1")
         self.assertEqual(source.name, "Test Source")
@@ -29,11 +27,7 @@ class TestCaptureSource(unittest.TestCase):
 
     def test_creation_default_icon(self):
         """Test CaptureSource uses default icon when not specified."""
-        source = CaptureSource(
-            id="test-2",
-            name="Test Source 2",
-            description="Another test source"
-        )
+        source = CaptureSource(id="test-2", name="Test Source 2", description="Another test source")
         self.assertEqual(source.icon, "video-display")
 
     def test_creation_stores_id(self):
@@ -146,7 +140,7 @@ class TestWindowSource(unittest.TestCase):
             window_id=12345,
             title="My Firefox Window",
             app_name="Firefox Web Browser",
-            icon_name="firefox"
+            icon_name="firefox",
         )
 
         self.assertEqual(source.id, "window-12345")
@@ -159,21 +153,14 @@ class TestWindowSource(unittest.TestCase):
     def test_creation_with_default_icon(self):
         """Test WindowSource uses default icon when icon_name is None."""
         source = WindowSource(
-            window_id=99999,
-            title="Some Window",
-            app_name="Unknown App",
-            icon_name=None
+            window_id=99999, title="Some Window", app_name="Unknown App", icon_name=None
         )
 
         self.assertEqual(source.icon, "application-x-executable")
 
     def test_start_capture_returns_gstreamer_pipeline(self):
         """Test WindowSource.start_capture() returns proper GStreamer pipeline string."""
-        source = WindowSource(
-            window_id=12345,
-            title="Test Window",
-            app_name="Test App"
-        )
+        source = WindowSource(window_id=12345, title="Test Window", app_name="Test App")
         pipeline = source.start_capture()
 
         self.assertIsInstance(pipeline, str)
@@ -288,5 +275,5 @@ class TestGetAvailableSources(unittest.TestCase):
             capture_module.Gdk = original_gdk
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

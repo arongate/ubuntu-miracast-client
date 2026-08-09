@@ -1,9 +1,8 @@
 """Tests for the casting module."""
 
-import sys
 import unittest
-from unittest.mock import patch, MagicMock
 from datetime import datetime
+from unittest.mock import MagicMock, patch
 
 # Mock gi.repository before importing casting module
 mock_gi = MagicMock()
@@ -13,10 +12,13 @@ mock_gobject.SignalFlags = MagicMock()
 mock_gobject.SignalFlags.RUN_FIRST = 1
 mock_glib = MagicMock()
 
-with patch.dict('sys.modules', {
-    'gi': mock_gi,
-    'gi.repository': MagicMock(GObject=mock_gobject, GLib=mock_glib),
-}):
+with patch.dict(
+    "sys.modules",
+    {
+        "gi": mock_gi,
+        "gi.repository": MagicMock(GObject=mock_gobject, GLib=mock_glib),
+    },
+):
     mock_gi.require_version = MagicMock()
     from miracast_client.casting import CastingStats, CastManager
 
@@ -50,7 +52,7 @@ class TestCastingStats(unittest.TestCase):
             average_bitrate=5_000_000,
             peak_bitrate=10_000_000,
             dropped_frames=5,
-            errors=1
+            errors=1,
         )
 
         self.assertEqual(stats.start_time, start)
@@ -68,7 +70,7 @@ class TestCastManager(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             self.manager = CastManager()
         # Override the emit method to avoid GObject signal issues
         self.manager.emit = MagicMock()
@@ -103,8 +105,8 @@ class TestCastManager(unittest.TestCase):
             self.manager.start_casting(mock_source, None)
         self.assertIn("No device", str(ctx.exception))
 
-    @patch('miracast_client.casting.threading.Thread')
-    @patch('miracast_client.casting.threading.Event')
+    @patch("miracast_client.casting.threading.Thread")
+    @patch("miracast_client.casting.threading.Event")
     def test_start_casting_success(self, mock_event_class, mock_thread_class):
         """Test start_casting success sets state correctly."""
         mock_source = MagicMock()
@@ -116,7 +118,7 @@ class TestCastManager(unittest.TestCase):
         mock_thread_class.return_value = mock_thread
 
         # Re-create manager to get fresh threading mocks
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             manager = CastManager()
         manager.emit = MagicMock()
 
@@ -136,7 +138,7 @@ class TestCastManager(unittest.TestCase):
             self.manager.stop_casting()
         self.assertIn("No active casting session", str(ctx.exception))
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_stop_casting_returns_stats(self, mock_thread_class):
         """Test stop_casting returns CastingStats with populated fields."""
         mock_source = MagicMock()
@@ -147,7 +149,7 @@ class TestCastManager(unittest.TestCase):
         mock_thread = MagicMock()
         mock_thread_class.return_value = mock_thread
 
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             manager = CastManager()
         manager.emit = MagicMock()
 
@@ -159,7 +161,7 @@ class TestCastManager(unittest.TestCase):
         self.assertIsNotNone(stats.end_time)
         self.assertIsInstance(stats.duration, int)
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_stop_casting_resets_is_casting(self, mock_thread_class):
         """Test stop_casting resets is_casting to False."""
         mock_source = MagicMock()
@@ -170,7 +172,7 @@ class TestCastManager(unittest.TestCase):
         mock_thread = MagicMock()
         mock_thread_class.return_value = mock_thread
 
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             manager = CastManager()
         manager.emit = MagicMock()
 
@@ -180,7 +182,7 @@ class TestCastManager(unittest.TestCase):
         manager.stop_casting()
         self.assertFalse(manager.is_casting())
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_stop_casting_emits_signal(self, mock_thread_class):
         """Test stop_casting emits the casting-stopped signal."""
         mock_source = MagicMock()
@@ -191,7 +193,7 @@ class TestCastManager(unittest.TestCase):
         mock_thread = MagicMock()
         mock_thread_class.return_value = mock_thread
 
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             manager = CastManager()
         manager.emit = MagicMock()
 
@@ -204,5 +206,5 @@ class TestCastManager(unittest.TestCase):
         self.assertEqual(calls[0][0][1], stats)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

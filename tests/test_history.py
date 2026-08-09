@@ -1,12 +1,12 @@
 """Tests for the history module."""
 
 import json
-import sys
+
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Mock gi.repository before importing history module
 mock_gi = MagicMock()
@@ -14,15 +14,20 @@ mock_gobject = MagicMock()
 mock_gobject.Object = object
 mock_glib = MagicMock()
 
-with patch.dict('sys.modules', {
-    'gi': mock_gi,
-    'gi.repository': MagicMock(GObject=mock_gobject, GLib=mock_glib, Gdk=MagicMock(), Gio=MagicMock()),
-}):
+with patch.dict(
+    "sys.modules",
+    {
+        "gi": mock_gi,
+        "gi.repository": MagicMock(
+            GObject=mock_gobject, GLib=mock_glib, Gdk=MagicMock(), Gio=MagicMock()
+        ),
+    },
+):
     mock_gi.require_version = MagicMock()
     from miracast_client.capture import CaptureSource
-    from miracast_client.discovery import MiracastDevice
     from miracast_client.casting import CastingStats
-    from miracast_client.history import SessionRecord, SessionHistory
+    from miracast_client.discovery import MiracastDevice
+    from miracast_client.history import SessionHistory, SessionRecord
 
 
 class TestSessionRecord(unittest.TestCase):
@@ -30,13 +35,15 @@ class TestSessionRecord(unittest.TestCase):
 
     def _create_sample_record(self):
         """Helper to create a sample SessionRecord."""
-        source = CaptureSource(id="screen-0", name="Screen 1", description="1920x1080", icon="video-display")
+        source = CaptureSource(
+            id="screen-0", name="Screen 1", description="1920x1080", icon="video-display"
+        )
         device = MiracastDevice(
             id="aa:bb:cc:dd:ee:01",
             name="Living Room TV",
             address="aa:bb:cc:dd:ee:01",
             model="Samsung Smart TV",
-            signal_strength=85
+            signal_strength=85,
         )
         stats = CastingStats(
             start_time=datetime(2026, 8, 9, 10, 0, 0),
@@ -46,7 +53,7 @@ class TestSessionRecord(unittest.TestCase):
             average_bitrate=5_000_000,
             peak_bitrate=10_000_000,
             dropped_frames=5,
-            errors=1
+            errors=1,
         )
         timestamp = datetime(2026, 8, 9, 10, 30, 0)
         return SessionRecord(source=source, device=device, stats=stats, timestamp=timestamp)
@@ -83,14 +90,14 @@ class TestSessionRecord(unittest.TestCase):
                 "id": "screen-0",
                 "name": "Screen 1",
                 "description": "1920x1080",
-                "icon": "video-display"
+                "icon": "video-display",
             },
             "device": {
                 "id": "device-1",
                 "name": "Test TV",
                 "address": "aa:bb:cc:dd:ee:01",
                 "model": "Test Model",
-                "signal_strength": 75
+                "signal_strength": 75,
             },
             "stats": {
                 "start_time": "2026-08-09T10:00:00",
@@ -100,9 +107,9 @@ class TestSessionRecord(unittest.TestCase):
                 "average_bitrate": 5_000_000,
                 "peak_bitrate": 10_000_000,
                 "dropped_frames": 5,
-                "errors": 1
+                "errors": 1,
             },
-            "timestamp": "2026-08-09T10:30:00"
+            "timestamp": "2026-08-09T10:30:00",
         }
 
         record = SessionRecord.from_dict(data)
@@ -136,7 +143,13 @@ class TestSessionRecord(unittest.TestCase):
         """Test from_dict handles None end_time."""
         data = {
             "source": {"id": "s1", "name": "S1", "description": "d", "icon": "i"},
-            "device": {"id": "d1", "name": "D1", "address": "a", "model": "m", "signal_strength": 50},
+            "device": {
+                "id": "d1",
+                "name": "D1",
+                "address": "a",
+                "model": "m",
+                "signal_strength": 50,
+            },
             "stats": {
                 "start_time": "2026-08-09T10:00:00",
                 "end_time": None,
@@ -145,9 +158,9 @@ class TestSessionRecord(unittest.TestCase):
                 "average_bitrate": 0,
                 "peak_bitrate": 0,
                 "dropped_frames": 0,
-                "errors": 0
+                "errors": 0,
             },
-            "timestamp": "2026-08-09T10:00:00"
+            "timestamp": "2026-08-09T10:00:00",
         }
 
         record = SessionRecord.from_dict(data)
@@ -177,7 +190,7 @@ class TestSessionHistory(unittest.TestCase):
             name="Test TV",
             address="aa:bb:cc:dd:ee:01",
             model="Test Model",
-            signal_strength=80
+            signal_strength=80,
         )
 
     def _create_sample_stats(self):
@@ -190,7 +203,7 @@ class TestSessionHistory(unittest.TestCase):
             average_bitrate=5_000_000,
             peak_bitrate=10_000_000,
             dropped_frames=5,
-            errors=0
+            errors=0,
         )
 
     def test_empty_file_new_install(self):
@@ -214,7 +227,7 @@ class TestSessionHistory(unittest.TestCase):
 
         # Verify persisted to file
         self.assertTrue(self.history_path.exists())
-        with open(self.history_path, 'r') as f:
+        with open(self.history_path, "r") as f:
             data = json.load(f)
         self.assertEqual(len(data), 1)
 
@@ -247,14 +260,14 @@ class TestSessionHistory(unittest.TestCase):
         self.assertEqual(len(history.get_sessions()), 0)
 
         # Verify file was updated
-        with open(self.history_path, 'r') as f:
+        with open(self.history_path, "r") as f:
             data = json.load(f)
         self.assertEqual(len(data), 0)
 
     def test_loading_corrupted_json(self):
         """Test loading corrupted JSON handles gracefully."""
         # Write corrupted JSON to file
-        with open(self.history_path, 'w') as f:
+        with open(self.history_path, "w") as f:
             f.write("{invalid json content!!")
 
         # Should not raise, just return empty list
@@ -279,5 +292,5 @@ class TestSessionHistory(unittest.TestCase):
         self.assertEqual(sessions[0].device.name, "Test TV")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

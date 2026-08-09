@@ -1,12 +1,12 @@
 """Integration tests for the Ubuntu Miracast Client."""
 
 import json
-import sys
+
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Mock gi.repository before importing modules
 mock_gi = MagicMock()
@@ -16,28 +16,33 @@ mock_gobject.SignalFlags = MagicMock()
 mock_gobject.SignalFlags.RUN_FIRST = 1
 mock_glib = MagicMock()
 
-with patch.dict('sys.modules', {
-    'gi': mock_gi,
-    'gi.repository': MagicMock(GObject=mock_gobject, GLib=mock_glib, Gdk=MagicMock(), Gio=MagicMock()),
-}):
+with patch.dict(
+    "sys.modules",
+    {
+        "gi": mock_gi,
+        "gi.repository": MagicMock(
+            GObject=mock_gobject, GLib=mock_glib, Gdk=MagicMock(), Gio=MagicMock()
+        ),
+    },
+):
     mock_gi.require_version = MagicMock()
     from miracast_client.capture import CaptureSource
-    from miracast_client.casting import CastManager, CastingStats
+    from miracast_client.casting import CastingStats, CastManager
     from miracast_client.config import Config
     from miracast_client.discovery import MiracastDevice, MiracastDiscovery
-    from miracast_client.history import SessionHistory, SessionRecord
+    from miracast_client.history import SessionHistory
 
 
 class TestCastingLifecycle(unittest.TestCase):
     """Integration tests for the full casting lifecycle."""
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_full_casting_lifecycle(self, mock_thread_class):
         """Test full casting lifecycle: start_casting → stop_casting → stats returned."""
         mock_thread = MagicMock()
         mock_thread_class.return_value = mock_thread
 
-        with patch('miracast_client.casting.Config'):
+        with patch("miracast_client.casting.Config"):
             manager = CastManager()
         manager.emit = MagicMock()
 
@@ -48,7 +53,7 @@ class TestCastingLifecycle(unittest.TestCase):
             name="Living Room TV",
             address="aa:bb:cc:dd:ee:01",
             model="Samsung Smart TV",
-            signal_strength=85
+            signal_strength=85,
         )
 
         # Verify initial state
@@ -79,7 +84,7 @@ class TestCastingLifecycle(unittest.TestCase):
 class TestCastingWithHistory(unittest.TestCase):
     """Integration tests for casting sessions with history recording."""
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_casting_session_adds_to_history(self, mock_thread_class):
         """Test casting session adds to history when manually recorded."""
         mock_thread = MagicMock()
@@ -89,7 +94,7 @@ class TestCastingWithHistory(unittest.TestCase):
             history_path = Path(temp_dir) / "history.json"
             history = SessionHistory(history_path=str(history_path))
 
-            with patch('miracast_client.casting.Config'):
+            with patch("miracast_client.casting.Config"):
                 manager = CastManager()
             manager.emit = MagicMock()
 
@@ -100,7 +105,7 @@ class TestCastingWithHistory(unittest.TestCase):
                 name="Test TV",
                 address="aa:bb:cc:dd:ee:01",
                 model="Test Model",
-                signal_strength=75
+                signal_strength=75,
             )
 
             # Start and stop casting
@@ -108,7 +113,7 @@ class TestCastingWithHistory(unittest.TestCase):
             stats = manager.stop_casting()
 
             # Record in history
-            record = history.add_session(source, device, stats)
+            history.add_session(source, device, stats)
 
             # Verify history was updated
             sessions = history.get_sessions()
@@ -119,7 +124,7 @@ class TestCastingWithHistory(unittest.TestCase):
 
             # Verify file was written
             self.assertTrue(history_path.exists())
-            with open(history_path, 'r') as f:
+            with open(history_path, "r") as f:
                 data = json.load(f)
             self.assertEqual(len(data), 1)
 
@@ -127,7 +132,7 @@ class TestCastingWithHistory(unittest.TestCase):
 class TestConfigAffectsCastManager(unittest.TestCase):
     """Integration tests for config values affecting CastManager behavior."""
 
-    @patch('miracast_client.casting.threading.Thread')
+    @patch("miracast_client.casting.threading.Thread")
     def test_config_values_affect_cast_manager(self, mock_thread_class):
         """Test config values are read by CastManager."""
         mock_thread = MagicMock()
@@ -166,7 +171,7 @@ class TestDiscoveryLifecycle(unittest.TestCase):
 
         # Mock the thread to avoid actual threading
         mock_thread = MagicMock()
-        with patch('miracast_client.discovery.threading.Thread', return_value=mock_thread):
+        with patch("miracast_client.discovery.threading.Thread", return_value=mock_thread):
             # Start discovery
             discovery.start_discovery()
 
@@ -215,13 +220,15 @@ class TestSessionRecordPersistenceRoundtrip(unittest.TestCase):
             # Create history and add sessions
             history1 = SessionHistory(history_path=str(history_path))
 
-            source = CaptureSource(id="screen-0", name="Screen 1", description="1920x1080", icon="video-display")
+            source = CaptureSource(
+                id="screen-0", name="Screen 1", description="1920x1080", icon="video-display"
+            )
             device = MiracastDevice(
                 id="aa:bb:cc:dd:ee:01",
                 name="Living Room TV",
                 address="aa:bb:cc:dd:ee:01",
                 model="Samsung Smart TV",
-                signal_strength=85
+                signal_strength=85,
             )
             stats = CastingStats(
                 start_time=datetime(2026, 8, 9, 10, 0, 0),
@@ -231,7 +238,7 @@ class TestSessionRecordPersistenceRoundtrip(unittest.TestCase):
                 average_bitrate=5_000_000,
                 peak_bitrate=10_000_000,
                 dropped_frames=5,
-                errors=1
+                errors=1,
             )
 
             history1.add_session(source, device, stats)
@@ -270,13 +277,15 @@ class TestSessionRecordPersistenceRoundtrip(unittest.TestCase):
 
             # Add multiple sessions
             for i in range(5):
-                source = CaptureSource(id=f"screen-{i}", name=f"Screen {i+1}", description=f"{1920+i}x1080")
+                source = CaptureSource(
+                    id=f"screen-{i}", name=f"Screen {i+1}", description=f"{1920+i}x1080"
+                )
                 device = MiracastDevice(
                     id=f"device-{i}",
                     name=f"TV {i+1}",
                     address=f"aa:bb:cc:dd:ee:{i:02d}",
                     model=f"Model {i}",
-                    signal_strength=80 - i * 5
+                    signal_strength=80 - i * 5,
                 )
                 stats = CastingStats(
                     start_time=datetime(2026, 8, 9, 10 + i, 0, 0),
@@ -286,7 +295,7 @@ class TestSessionRecordPersistenceRoundtrip(unittest.TestCase):
                     average_bitrate=5_000_000,
                     peak_bitrate=10_000_000,
                     dropped_frames=i,
-                    errors=0
+                    errors=0,
                 )
                 history.add_session(source, device, stats)
 
@@ -300,5 +309,5 @@ class TestSessionRecordPersistenceRoundtrip(unittest.TestCase):
                 self.assertEqual(session.device.name, f"TV {i+1}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
