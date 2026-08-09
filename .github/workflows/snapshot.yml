@@ -1,0 +1,110 @@
+name: Snapshot Build
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    name: Build Snapshot
+
+    env:
+      GI_TYPELIB_PATH: /usr/lib/x86_64-linux-gnu/girepository-1.0
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgirepository-2.0-dev libcairo2-dev pkg-config python3-dev \
+          gir1.2-gtk-4.0 gir1.2-adw-1 \
+          gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
+          wpasupplicant \
+          build-essential debhelper dh-python fakeroot
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyGObject pycairo
+        pip install pytest pytest-cov build
+        pip install -e . --no-deps
+
+    - name: Run tests
+      run: |
+        pytest --cov=miracast_client tests/
+
+    - name: Generate snapshot version
+      id: version
+      run: |
+        BASE_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/miracast_client/__init__.py)
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        DATE=$(date +%Y%m%d)
+        SNAPSHOT_VERSION="${BASE_VERSION}.dev${DATE}+g${SHORT_SHA}"
+        echo "snapshot_version=${SNAPSHOT_VERSION}" >> $GITHUB_OUTPUT
+        echo "Snapshot version: ${SNAPSHOT_VERSION}"
+
+        # Patch __init__.py with snapshot version for the build
+        sed -i "s/__version__ = \".*\"/__version__ = \"${SNAPSHOT_VERSION}\"/" src/miracast_client/__init__.py
+
+    - name: Build Python package
+      run: |
+        python -m build
+
+    - name: Build Debian package
+      run: |
+        chmod +x debian/rules
+        chmod +x debian/ubuntu-miracast-client.postinst
+        chmod +x debian/ubuntu-miracast-client.postrm
+        dpkg-buildpackage -us -uc -b || true
+        mkdir -p dist/deb
+        cp ../ubuntu-miracast-client_*.deb dist/deb/ 2>/dev/null || echo "Debian build skipped"
+
+    - name: Upload snapshot artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: snapshot-${{ steps.version.outputs.snapshot_version }}
+        path: |
+          dist/*.whl
+          dist/*.tar.gz
+          dist/deb/*.deb
+        retention-days: 7
+
+    - name: Update snapshot pre-release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: snapshot
+        name: "Snapshot: ${{ steps.version.outputs.snapshot_version }}"
+        prerelease: true
+        make_latest: false
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+          dist/deb/*.deb
+        body: |
+          # Snapshot Build
+
+          **Version:** `${{ steps.version.outputs.snapshot_version }}`
+          **Commit:** ${{ github.sha }}
+          **Date:** ${{ github.event.head_commit.timestamp }}
+
+          This is an automated snapshot build from the `main` branch.
+          It may be unstable — use official releases for production.
+
+          ## Install
+
+          ```bash
+          pip install ubuntu_miracast_client-${{ steps.version.outputs.snapshot_version }}-py3-none-any.whl
+          ```
