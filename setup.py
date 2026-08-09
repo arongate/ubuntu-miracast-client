@@ -45,9 +45,12 @@ setup(
     ],
     python_requires=">=3.10",
     install_requires=[
+        # NOTE: PyGObject and pycairo require system libraries.
+        # On Ubuntu: sudo apt install python3-gi python3-cairo python3-gst-1.0
+        # They are listed here for metadata but may fail to install via pip
+        # in environments without the required C libraries and compiler.
         "PyGObject>=3.42.0",
         "pycairo>=1.20.0",
-        "gstreamer-python>=1.0.0",
     ],
     extras_require={
         "dev": [
