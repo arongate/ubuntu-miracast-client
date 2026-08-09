@@ -71,6 +71,54 @@ specs/                     # Project specifications
 docs/                      # User-facing documentation
 ```
 
+## Commit Messages
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/). Every commit message must follow this format:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+
+| Type | Description | Version bump |
+|------|-------------|-------------|
+| `feat` | New feature | Minor (0.x.0) |
+| `fix` | Bug fix | Patch (0.0.x) |
+| `perf` | Performance improvement | Patch |
+| `docs` | Documentation only | None |
+| `style` | Code formatting | None |
+| `refactor` | Code refactoring | None |
+| `test` | Adding/fixing tests | None |
+| `build` | Build system changes | None |
+| `ci` | CI/CD changes | None |
+| `chore` | Other maintenance | None |
+
+### Breaking Changes
+
+Append `!` after the type or add `BREAKING CHANGE:` in the footer:
+
+```
+feat!: redesign streaming API
+
+BREAKING CHANGE: The start_casting() method now requires a StreamConfig object.
+```
+
+During the **unstable phase (0.x)**, breaking changes bump the minor version instead of major.
+
+### Examples
+
+```bash
+git commit -m "feat(discovery): add mDNS fallback for device scanning"
+git commit -m "fix(casting): handle dropped connection gracefully"
+git commit -m "docs: update getting-started guide"
+git commit -m "ci: add Python 3.13 to test matrix"
+```
+
 ## Development Workflow
 
 1. **Fork the repository** and clone your fork
@@ -141,23 +189,28 @@ make deb      # Debian .deb
 
 ## Release Process
 
-Releases are triggered by pushing a version tag:
+Releases are managed via the GitHub Actions **Release** workflow (`workflow_dispatch`):
 
-```bash
-# Update version in src/miracast_client/__init__.py
-# Update CHANGELOG.md
+1. Navigate to Actions → Release → Run workflow
+2. Choose bump type (`auto`, `patch`, `minor`, or `major`)
+   - `auto` reads your commit history and determines the bump from Conventional Commits
+3. The workflow will:
+   - Determine the new version based on commits since the last tag
+   - Run the full test suite
+   - Build Python and Debian packages
+   - Update the `VERSION` file, commit, and tag
+   - Publish to PyPI and create a GitHub Release with auto-generated release notes
 
-git tag -a v1.1.0 -m "Release v1.1.0"
-git push origin v1.1.0
-```
+### Version File
 
-The GitHub Actions release workflow will:
-1. Run the full test suite
-2. Verify the tag matches `__version__` in `__init__.py`
-3. Generate changelog from git commits
-4. Build Python and Debian packages
-5. Publish to PyPI
-6. Create a GitHub Release with all artifacts
+The single source of truth for the current version is the `VERSION` file at the project root. It is read by `__init__.py` and `setup.py` at runtime/build time.
+
+### Snapshot Builds
+
+Every push to `main` triggers a snapshot build that:
+- Runs tests
+- Computes the next anticipated version from commits (e.g., `0.0.2-dev.3`)
+- Builds and publishes packages as a GitHub pre-release
 
 ## Pull Request Guidelines
 

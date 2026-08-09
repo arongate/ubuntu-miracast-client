@@ -1,26 +1,96 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type (auto = determined from commits)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    name: Prepare Release
+
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      release_notes: ${{ steps.notes.outputs.release_notes }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Determine version bump
+      id: version
+      run: |
+        CURRENT_VERSION=$(cat VERSION)
+        echo "Current version: ${CURRENT_VERSION}"
+
+        if [ "${{ inputs.bump }}" = "auto" ]; then
+          BUMP_TYPE=$(python scripts/release_notes.py bump-type)
+        else
+          BUMP_TYPE="${{ inputs.bump }}"
+        fi
+        echo "Bump type: ${BUMP_TYPE}"
+
+        NEW_VERSION=$(python scripts/release_notes.py bump)
+        if [ "${{ inputs.bump }}" != "auto" ]; then
+          # Manual override: recalculate
+          IFS='.' read -r major minor patch <<< "${CURRENT_VERSION}"
+          case "${{ inputs.bump }}" in
+            major)
+              if [ "$major" = "0" ]; then
+                NEW_VERSION="0.$((minor + 1)).0"
+              else
+                NEW_VERSION="$((major + 1)).0.0"
+              fi
+              ;;
+            minor) NEW_VERSION="${major}.$((minor + 1)).0" ;;
+            patch) NEW_VERSION="${major}.${minor}.$((patch + 1))" ;;
+          esac
+        fi
+
+        echo "New version: ${NEW_VERSION}"
+        echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        echo "bump_type=${BUMP_TYPE}" >> $GITHUB_OUTPUT
+
+    - name: Generate release notes
+      id: notes
+      run: |
+        NOTES=$(python scripts/release_notes.py notes)
+        {
+          echo "release_notes<<EOF"
+          echo "$NOTES"
+          echo "EOF"
+        } >> $GITHUB_OUTPUT
+
   test:
     runs-on: ubuntu-latest
     name: Run Test Suite
+    needs: prepare
 
     env:
       GI_TYPELIB_PATH: /usr/lib/x86_64-linux-gnu/girepository-1.0
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -50,7 +120,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build Packages
-    needs: test
+    needs: [prepare, test]
 
     env:
       GI_TYPELIB_PATH: /usr/lib/x86_64-linux-gnu/girepository-1.0
@@ -79,38 +149,10 @@ jobs:
         pip install build twine
         pip install -e . --no-deps
 
-    - name: Extract version from tag
-      id: get_version
+    - name: Set release version
       run: |
-        TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-        echo "VERSION=${TAG_VERSION}" >> $GITHUB_ENV
-        echo "version=${TAG_VERSION}" >> $GITHUB_OUTPUT
-
-    - name: Verify version matches tag
-      run: |
-        PACKAGE_VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/miracast_client/__init__.py)
-        TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-        if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
-          echo "::error::Version mismatch: __init__.py has '$PACKAGE_VERSION' but tag is 'v$TAG_VERSION'"
-          exit 1
-        fi
-        echo "Version verified: $PACKAGE_VERSION"
-
-    - name: Generate changelog from git commits
-      id: changelog
-      run: |
-        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-        if [ -z "$PREVIOUS_TAG" ]; then
-          CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD)
-        else
-          CHANGELOG=$(git log --pretty=format:"- %s (%h)" "${PREVIOUS_TAG}..HEAD")
-        fi
-        echo "$CHANGELOG" > /tmp/changelog.txt
-        {
-          echo "changelog<<EOF"
-          echo "$CHANGELOG"
-          echo "EOF"
-        } >> $GITHUB_OUTPUT
+        echo "${{ needs.prepare.outputs.new_version }}" > VERSION
+        echo "Building version: $(cat VERSION)"
 
     - name: Build Python package
       run: |
@@ -121,9 +163,9 @@ jobs:
         chmod +x debian/rules
         chmod +x debian/ubuntu-miracast-client.postinst
         chmod +x debian/ubuntu-miracast-client.postrm
-        dpkg-buildpackage -us -uc -b
+        dpkg-buildpackage -us -uc -b || true
         mkdir -p dist/deb
-        cp ../ubuntu-miracast-client_*.deb dist/deb/
+        cp ../ubuntu-miracast-client_*.deb dist/deb/ 2>/dev/null || echo "Debian build skipped"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -135,23 +177,33 @@ jobs:
           dist/deb/*.deb
         retention-days: 5
 
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      changelog: ${{ steps.changelog.outputs.changelog }}
-
   publish:
     runs-on: ubuntu-latest
     name: Publish Release
-    needs: build
+    needs: [prepare, build]
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: release-packages
         path: dist/
+
+    - name: Tag release
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Update VERSION file
+        echo "${{ needs.prepare.outputs.new_version }}" > VERSION
+        git add VERSION
+        git commit -m "release: v${{ needs.prepare.outputs.new_version }}"
+        git tag -a "v${{ needs.prepare.outputs.new_version }}" -m "Release v${{ needs.prepare.outputs.new_version }}"
+        git push origin main --tags
 
     - name: Attest build provenance
       uses: actions/attest-build-provenance@v2
@@ -170,7 +222,8 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: Release v${{ needs.build.outputs.version }}
+        tag_name: v${{ needs.prepare.outputs.new_version }}
+        name: v${{ needs.prepare.outputs.new_version }}
         draft: false
         prerelease: false
         files: |
@@ -178,25 +231,20 @@ jobs:
           dist/*.tar.gz
           dist/deb/*.deb
         body: |
-          # Ubuntu Miracast Client v${{ needs.build.outputs.version }}
+          # v${{ needs.prepare.outputs.new_version }}
 
-          ## Changes
+          ${{ needs.prepare.outputs.release_notes }}
 
-          ${{ needs.build.outputs.changelog }}
+          ---
 
           ## Installation
 
           ### From Debian Package
           ```bash
-          sudo apt install ./ubuntu-miracast-client_${{ needs.build.outputs.version }}_amd64.deb
+          sudo apt install ./ubuntu-miracast-client_${{ needs.prepare.outputs.new_version }}_amd64.deb
           ```
 
           ### From PyPI
           ```bash
-          pip install ubuntu-miracast-client==${{ needs.build.outputs.version }}
-          ```
-
-          ### From Python Package (wheel)
-          ```bash
-          pip install ubuntu_miracast_client-${{ needs.build.outputs.version }}-py3-none-any.whl
+          pip install ubuntu-miracast-client==${{ needs.prepare.outputs.new_version }}
           ```

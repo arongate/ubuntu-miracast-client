@@ -2,40 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+> **Note:** This project is in the unstable phase (`0.x.y`). Breaking changes
+> may occur in any minor release. See the [versioning policy](README.md#versioning).
 
 ## [Unreleased]
 
-### Changed
-- Switched development workflow from pip/venv to uv
-- Replaced `@dataclass` with `GObject.Object` subclasses for GTK4 `Gio.ListStore` compatibility (`MiracastDevice`, `CaptureSource`, `SessionRecord`)
-- Made Gdk import graceful in `capture.py` — works in headless/test environments
-- Fixed GTK4 `ListItem` factory pattern in all UI modules (device_selector, source_selector, history_view) to use widget tree navigation instead of attribute storage
-- Added missing `Gio` import in `source_selector.py`
-- Removed `gstreamer-python` from `install_requires` (Linux system package only, not available on PyPI for Linux)
-- Updated CI workflow to use actions v4/v5 with Python 3.10/3.11/3.12 matrix
-- Updated release workflow to 3-job pipeline (test → build → publish) with version verification, changelog generation, PyPI publishing, and build attestation
-
 ### Added
-- Comprehensive unit tests for all core modules (73 total tests):
-  - `test_capture.py` — 20 tests for capture sources and pipeline generation
-  - `test_casting.py` — 11 tests for session lifecycle and validation
-  - `test_history.py` — 11 tests for serialization and persistence
-  - `test_service.py` — 13 tests for systemctl operations
-  - `test_integration.py` — 7 tests for cross-module interactions
-- Project specifications in `specs/` directory:
-  - `requirements.md` — functional and non-functional requirements
-  - `architecture.md` — architecture and design specification
-  - `api.md` — complete module API documentation
-  - `testing.md` — testing strategy and test case specifications
-- uv-based development workflow documentation
+- Conventional Commits-based versioning with auto-generated release notes
+- SemVer-compliant snapshot builds (e.g., `0.0.2-dev.3`)
+- Release workflow with automatic version bump detection
+- PR template with change type classification
+- Breaking change issue template
+- `VERSION` file as single source of truth
+- `scripts/release_notes.py` for commit parsing and version management
+- Comprehensive unit tests (73 tests across 7 modules)
+- Integration tests for cross-module interactions
+- flake8 configuration (`setup.cfg`) with line-length=100
+- mypy configuration ignoring `gi` stubs
+- uv-based development workflow
+
+### Changed
+- Switched from tag-push release to `workflow_dispatch` release
+- Snapshot builds now use SemVer pre-release format instead of date-based
+- Converted dataclasses to GObject subclasses for GTK4 Gio.ListStore compatibility
+- Made Gdk import graceful for headless environments
+- Fixed GTK4 ListItem factory pattern in UI modules
+- Updated CI to use `libgirepository-2.0-dev` for PyGObject 3.56+
+- All source formatted with Black (line-length=100)
 
 ### Fixed
-- `test_discovery.py` — fixed for GObject subclass compatibility (was patching threading at module level breaking GObject init)
-- Discovery module `stop_discovery()` properly sets `_thread = None` after joining
+- Missing `Gio` import in source_selector.py
+- `CastingStats.end_time` type annotation (`Optional[datetime]`)
+- flake8 unused imports across all modules
+- test_discovery.py GObject compatibility
 
-## [1.0.0] - 2024-05-01
+## [0.0.1] - 2024-05-01
 
 ### Added
 - Initial release of Ubuntu Miracast Client
@@ -46,5 +50,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session history tracking with statistics
 - Optional systemd user service mode
 - Debian package support
-- GitHub Actions CI/CD pipeline
+- GitHub Actions CI pipeline
 - Development container support
