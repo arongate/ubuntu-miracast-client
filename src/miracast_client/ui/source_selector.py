@@ -22,25 +22,41 @@ class SourceSelector(Gtk.Box):
 
     def __init__(self):
         """Initialize the source selector."""
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.set_margin_top(24)
-        self.set_margin_bottom(24)
-        self.set_margin_start(24)
-        self.set_margin_end(24)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.set_vexpand(True)
 
         self._setup_ui()
         self._load_sources()
 
     def _setup_ui(self):
         """Set up the user interface."""
-        # Header
+        # Header area with Select button (fixed at top)
+        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        header_box.set_margin_top(24)
+        header_box.set_margin_start(24)
+        header_box.set_margin_end(24)
+        header_box.set_margin_bottom(12)
+
         header = Gtk.Label()
         header.set_markup("<span size='x-large'>Select What to Cast</span>")
-        header.set_margin_bottom(24)
-        self.append(header)
+        header.set_hexpand(True)
+        header.set_halign(Gtk.Align.START)
+        header_box.append(header)
+
+        self.select_button = Gtk.Button()
+        self.select_button.set_label("Select →")
+        self.select_button.add_css_class("suggested-action")
+        self.select_button.connect("clicked", self._on_select_clicked)
+        self.select_button.set_sensitive(False)
+        header_box.append(self.select_button)
+
+        self.append(header_box)
 
         # Source type selection
         type_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        type_box.set_margin_start(24)
+        type_box.set_margin_end(24)
+        type_box.set_margin_bottom(12)
 
         self.screen_radio = Gtk.CheckButton()
         self.screen_radio.set_label("Entire Screen")
@@ -56,10 +72,11 @@ class SourceSelector(Gtk.Box):
         type_box.append(self.window_radio)
         self.append(type_box)
 
-        # Source list
+        # Source list (scrollable, takes all remaining space)
         scrolled = Gtk.ScrolledWindow()
-        scrolled.set_min_content_height(300)
         scrolled.set_vexpand(True)
+        scrolled.set_margin_start(24)
+        scrolled.set_margin_end(24)
 
         self.source_list = Gtk.ListView()
         self.source_model = Gio.ListStore()
@@ -74,20 +91,6 @@ class SourceSelector(Gtk.Box):
 
         scrolled.set_child(self.source_list)
         self.append(scrolled)
-
-        # Select button
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        button_box.set_halign(Gtk.Align.END)
-        button_box.set_margin_top(24)
-
-        self.select_button = Gtk.Button()
-        self.select_button.set_label("Select")
-        self.select_button.add_css_class("suggested-action")
-        self.select_button.connect("clicked", self._on_select_clicked)
-        self.select_button.set_sensitive(False)
-
-        button_box.append(self.select_button)
-        self.append(button_box)
 
         # Connect selection changed signal
         self.source_selection.connect("selection-changed", self._on_selection_changed)

@@ -28,7 +28,8 @@ This project is in its initial development phase (`0.x.y`). Per [SemVer §4](htt
 sudo apt install python3-gi python3-cairo python3-gst-1.0 \
     gir1.2-gtk-4.0 gir1.2-adw-1 \
     gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
-    wpasupplicant
+    gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly \
+    wpasupplicant x11-utils
 ```
 
 ## Installation
@@ -36,7 +37,7 @@ sudo apt install python3-gi python3-cairo python3-gst-1.0 \
 ### From Debian Package
 
 ```bash
-sudo apt install ./ubuntu-miracast-client_1.0.0_amd64.deb
+sudo apt install ./ubuntu-miracast-client_0.0.1_amd64.deb
 ```
 
 ### From Source (using uv)
@@ -62,15 +63,19 @@ ubuntu-miracast-client
 Launch from your applications menu or run:
 
 ```bash
-ubuntu-miracast-client
+sudo ubuntu-miracast-client
 ```
+
+> **Note:** The application requires root privileges for Wi-Fi Direct P2P operations
+> (device discovery and connection via `wpa_cli`). Alternatively, configure polkit
+> rules for passwordless access to wpa_supplicant.
 
 ### Service Mode
 
 Run as a background service:
 
 ```bash
-ubuntu-miracast-client --service
+sudo ubuntu-miracast-client --service
 ```
 
 ## Development
@@ -81,7 +86,9 @@ ubuntu-miracast-client --service
 # Install system dependencies (Ubuntu/Debian)
 sudo apt install python3-gi python3-cairo python3-gst-1.0 \
     gir1.2-gtk-4.0 gir1.2-adw-1 \
-    gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
+    gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
+    gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly \
+    wpasupplicant x11-utils
 
 # Set up development environment with uv
 uv venv .venv --python /usr/bin/python3 --system-site-packages
@@ -93,7 +100,7 @@ uv pip install -e . --no-deps
 ### Running Tests
 
 ```bash
-# Run all 73 tests
+# Run all tests
 .venv/bin/python -m pytest tests/ -v
 
 # Run with coverage
@@ -107,12 +114,12 @@ uv pip install -e . --no-deps
 
 | Module | Tests | Coverage |
 |--------|-------|----------|
-| `test_capture.py` | 20 | CaptureSource, ScreenSource, WindowSource, get_available_sources |
-| `test_casting.py` | 11 | CastingStats, CastManager lifecycle and validation |
-| `test_config.py` | 6 | Config load/save, defaults, get/set |
-| `test_discovery.py` | 5 | MiracastDevice, MiracastDiscovery signals and lifecycle |
-| `test_history.py` | 11 | SessionRecord serialization, SessionHistory persistence |
-| `test_service.py` | 13 | ServiceManager systemctl operations |
+| `test_capture.py` | 25 | CaptureSource, ScreenSource, WindowSource, real X11 window parsing |
+| `test_casting.py` | 19 | CastingStats, CastManager, WifiDirectConnection lifecycle |
+| `test_config.py` | 5 | Config load/save, defaults, get/set |
+| `test_discovery.py` | 20 | WFD subelement parsing, MiracastDevice, MiracastDiscovery, P2P interface detection |
+| `test_history.py` | 10 | SessionRecord serialization, SessionHistory persistence |
+| `test_service.py` | 14 | ServiceManager systemctl operations |
 | `test_integration.py` | 7 | Cross-module interactions |
 
 ### Code Quality
@@ -154,12 +161,12 @@ docker exec -it ubuntu-miracast-client-dev bash
 src/miracast_client/
 ├── __init__.py          # Package root, version
 ├── app.py               # Application entry point (Adw.Application)
-├── discovery.py         # Wi-Fi Direct device discovery
-├── capture.py           # Screen/window capture sources
-├── casting.py           # Streaming session management
-├── history.py           # Session history persistence
-├── config.py            # Configuration management (JSON)
-├── service.py           # Systemd service management
+├── discovery.py         # Real Wi-Fi Direct P2P discovery (wpa_cli)
+├── capture.py           # Real screen/window enumeration (xprop, Gdk)
+├── casting.py           # Real GStreamer streaming + Wi-Fi Direct connection
+├── history.py           # Session history persistence (JSON)
+├── config.py            # Configuration management (JSON, XDG)
+├── service.py           # Systemd user service management
 └── ui/
     ├── main_window.py   # Main window with navigation stack
     ├── source_selector.py

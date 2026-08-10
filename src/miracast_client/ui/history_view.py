@@ -21,11 +21,8 @@ class HistoryView(Gtk.Box):
 
     def __init__(self, session_history):
         """Initialize the history view."""
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.set_margin_top(24)
-        self.set_margin_bottom(24)
-        self.set_margin_start(24)
-        self.set_margin_end(24)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.set_vexpand(True)
 
         self.session_history = session_history
 
@@ -33,9 +30,12 @@ class HistoryView(Gtk.Box):
 
     def _setup_ui(self):
         """Set up the user interface."""
-        # Header with action button
+        # Header with action button (fixed)
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        header_box.set_margin_bottom(24)
+        header_box.set_margin_top(24)
+        header_box.set_margin_bottom(12)
+        header_box.set_margin_start(24)
+        header_box.set_margin_end(24)
 
         header = Gtk.Label()
         header.set_markup("<span size='x-large'>Casting History</span>")
@@ -51,10 +51,11 @@ class HistoryView(Gtk.Box):
 
         self.append(header_box)
 
-        # Session list
+        # Session list (scrollable)
         scrolled = Gtk.ScrolledWindow()
-        scrolled.set_min_content_height(400)
         scrolled.set_vexpand(True)
+        scrolled.set_margin_start(24)
+        scrolled.set_margin_end(24)
 
         self.session_list = Gtk.ListView()
         self.session_model = Gio.ListStore()
@@ -72,7 +73,10 @@ class HistoryView(Gtk.Box):
 
         # Details view (shown when a session is selected)
         self.details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.details_box.set_margin_top(24)
+        self.details_box.set_margin_top(12)
+        self.details_box.set_margin_bottom(24)
+        self.details_box.set_margin_start(24)
+        self.details_box.set_margin_end(24)
         self.details_box.set_visible(False)
 
         details_header = Gtk.Label()

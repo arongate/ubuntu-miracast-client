@@ -22,29 +22,50 @@ class DeviceSelector(Gtk.Box):
 
     def __init__(self, discovery):
         """Initialize the device selector."""
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.set_margin_top(24)
-        self.set_margin_bottom(24)
-        self.set_margin_start(24)
-        self.set_margin_end(24)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.set_vexpand(True)
 
         self.discovery = discovery
         self.discovery.connect("device-found", self._on_device_found)
         self.discovery.connect("device-lost", self._on_device_lost)
+        self.discovery.connect("discovery-stopped", self._on_discovery_stopped)
 
         self._setup_ui()
 
     def _setup_ui(self):
         """Set up the user interface."""
-        # Header
+        # Header area with buttons (fixed at top)
+        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        header_box.set_margin_top(24)
+        header_box.set_margin_start(24)
+        header_box.set_margin_end(24)
+        header_box.set_margin_bottom(12)
+
         header = Gtk.Label()
         header.set_markup("<span size='x-large'>Select a Device</span>")
-        header.set_margin_bottom(24)
-        self.append(header)
+        header.set_hexpand(True)
+        header.set_halign(Gtk.Align.START)
+        header_box.append(header)
+
+        self.refresh_button = Gtk.Button()
+        self.refresh_button.set_label("Refresh")
+        self.refresh_button.connect("clicked", self._on_refresh_clicked)
+        header_box.append(self.refresh_button)
+
+        self.connect_button = Gtk.Button()
+        self.connect_button.set_label("Connect")
+        self.connect_button.add_css_class("suggested-action")
+        self.connect_button.connect("clicked", self._on_connect_clicked)
+        self.connect_button.set_sensitive(False)
+        header_box.append(self.connect_button)
+
+        self.append(header_box)
 
         # Status indicator
         self.status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.status_box.set_margin_bottom(12)
+        self.status_box.set_margin_start(24)
+        self.status_box.set_margin_end(24)
+        self.status_box.set_margin_bottom(6)
 
         self.spinner = Gtk.Spinner()
         self.spinner.set_size_request(16, 16)
@@ -56,10 +77,12 @@ class DeviceSelector(Gtk.Box):
 
         self.append(self.status_box)
 
-        # Device list
+        # Device list (scrollable, takes all remaining space)
         scrolled = Gtk.ScrolledWindow()
-        scrolled.set_min_content_height(300)
         scrolled.set_vexpand(True)
+        scrolled.set_margin_top(6)
+        scrolled.set_margin_start(24)
+        scrolled.set_margin_end(24)
 
         self.device_list = Gtk.ListView()
         self.device_model = Gio.ListStore()
@@ -74,25 +97,6 @@ class DeviceSelector(Gtk.Box):
 
         scrolled.set_child(self.device_list)
         self.append(scrolled)
-
-        # Button box
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        button_box.set_halign(Gtk.Align.END)
-        button_box.set_margin_top(24)
-
-        self.refresh_button = Gtk.Button()
-        self.refresh_button.set_label("Refresh")
-        self.refresh_button.connect("clicked", self._on_refresh_clicked)
-
-        self.connect_button = Gtk.Button()
-        self.connect_button.set_label("Connect")
-        self.connect_button.add_css_class("suggested-action")
-        self.connect_button.connect("clicked", self._on_connect_clicked)
-        self.connect_button.set_sensitive(False)
-
-        button_box.append(self.refresh_button)
-        button_box.append(self.connect_button)
-        self.append(button_box)
 
         # Connect selection changed signal
         self.device_selection.connect("selection-changed", self._on_selection_changed)
@@ -174,6 +178,15 @@ class DeviceSelector(Gtk.Box):
                 self.status_label.set_text(f"Found {self.device_model.get_n_items()} devices")
                 logger.info(f"Device lost: {device_id}")
                 break
+
+    def _on_discovery_stopped(self, discovery):
+        """Handle discovery stopped event (e.g. after timeout)."""
+        self.spinner.stop()
+        n_devices = self.device_model.get_n_items()
+        if n_devices > 0:
+            self.status_label.set_text(f"Discovery complete — {n_devices} devices found")
+        else:
+            self.status_label.set_text("Discovery complete — no devices found")
 
     def _on_selection_changed(self, selection, position, n_items):
         """Handle device selection change."""

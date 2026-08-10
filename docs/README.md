@@ -5,6 +5,7 @@ This directory contains documentation for the Ubuntu Miracast Client application
 ## Contents
 
 - [Getting Started Guide](getting-started.md): Instructions for installing and using the application
+- [Usage Scenarios](usage-scenarios.md): Real-world scenarios explaining how, why, and when to use the application
 - [Miracast Protocol](miracast-protocol.md): Technical overview of the Miracast protocol
 - [Architecture](architecture.md): Detailed description of the application architecture
 

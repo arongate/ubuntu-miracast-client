@@ -2,69 +2,129 @@
 
 ## Overview
 
-The Ubuntu Miracast Client follows a modular architecture with clear separation of concerns between UI components, core functionality, and system integration.
+The Ubuntu Miracast Client follows a modular architecture with clear separation of concerns between UI components, core functionality, and system integration. All modules use real system calls — no simulated or mocked behavior at runtime.
 
 ## Architecture Layers
 
-### UI Layer
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Application Layer                           │
+│            app.py — MiracastClientApp (Adw.Application)         │
+├─────────────────────────────────────────────────────────────────┤
+│                         UI Layer (GTK 4)                         │
+│  MainWindow │ SourceSelector │ DeviceSelector │ HistoryView     │
+│             │ SettingsView                                       │
+├─────────────────────────────────────────────────────────────────┤
+│                        Core Layer                                │
+│  Discovery │ Capture │ Casting │ History │ Config               │
+├─────────────────────────────────────────────────────────────────┤
+│                  System Integration Layer                        │
+│  wpa_cli (P2P) │ GStreamer (gst-launch-1.0) │ xprop (X11)     │
+│  systemd (service) │ ip (networking)                            │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-- **Main Window**: Central UI component that manages navigation between different views
-- **Source Selector**: UI for selecting a casting source (screen or window)
-- **Device Selector**: UI for discovering and selecting Miracast devices
-- **History View**: UI for viewing casting session history and statistics
-- **Settings View**: UI for configuring application settings
+## Core Components
 
-### Core Components
+### Discovery Module (`discovery.py`)
 
-- **Discovery Module**: Discovers Miracast-compatible devices on the network
-- **Capture Module**: Manages screen and window capture sources
-- **Casting Module**: Handles the Miracast streaming session
-- **History Module**: Tracks and stores casting session history
-- **Config Module**: Manages application configuration
-- **Service Module**: Manages the optional system service mode
+Discovers Miracast-compatible devices using real wpa_supplicant P2P:
 
-### System Integration
+- **Interface detection**: Auto-detects `p2p-dev-*` interface via `wpa_cli interface`
+- **WFD advertisement**: Sets Wi-Fi Display subelements to identify as WFD source
+- **P2P scanning**: `wpa_cli p2p_find` → polls `p2p_peers` → queries `p2p_peer <addr>`
+- **WFD parsing**: Decodes WFD subelement bitmaps to identify sinks vs sources
+- **Signal mapping**: Converts dBm values to 0-100% scale
+- **Filtering**: `get_devices()` returns only castable sinks
 
-- **Systemd Service**: Integration with systemd for service mode
-- **Logging**: Comprehensive logging for debugging and auditing
+### Capture Module (`capture.py`)
+
+Enumerates real screens and windows:
+
+- **Screens**: Via `Gdk.Display.get_monitors()` (GTK 4) or `xrandr` fallback
+- **Windows**: Via `xprop -root _NET_CLIENT_LIST` + per-window `WM_NAME`/`WM_CLASS` queries
+- **Pipeline generation**: Each source produces a GStreamer `ximagesrc` pipeline string
+
+### Casting Module (`casting.py`)
+
+Manages the full streaming lifecycle:
+
+- **Wi-Fi Direct connection** (`WifiDirectConnection`):
+  - `wpa_cli p2p_connect <addr> pbc go_intent=0`
+  - Monitors `ip link show` for P2P group interface creation
+  - Resolves peer IP via `ip addr show` + `ip neigh show`
+
+- **GStreamer streaming**:
+  - Launches `gst-launch-1.0` as subprocess
+  - Pipeline: `ximagesrc → videoconvert → x264enc (ultrafast/zerolatency) → mpegtsmux → rtpmp2tpay → udpsink`
+  - Monitors process health, collects stats
+
+- **Cleanup**: Terminates GStreamer, disconnects P2P group on stop/error
+
+### History Module (`history.py`)
+
+Persists session records to JSON at `~/.local/share/ubuntu-miracast-client/history.json`.
+
+### Config Module (`config.py`)
+
+XDG-compliant JSON config at `~/.config/ubuntu-miracast-client/config.json`.
+
+### Service Module (`service.py`)
+
+Manages systemd user service lifecycle via `systemctl --user` commands.
 
 ## Data Flow
 
-1. **Source Selection**:
-   - User selects a source (screen or window) via the Source Selector
-   - Source information is passed to the Capture Module
+```
+[User selects source] → SourceSelector emits "source-selected"
+        │
+        ▼
+[User selects device] → DeviceSelector emits "device-selected"
+        │
+        ▼
+[CastManager.start_casting(source, device)]
+        │
+        ├─► WifiDirectConnection.connect()  [wpa_cli p2p_connect]
+        │       │
+        │       ▼ (P2P group formed, IP assigned)
+        │
+        ├─► source.start_capture()  [generates GStreamer pipeline]
+        │
+        └─► subprocess.Popen(gst-launch-1.0 ...)  [real streaming]
+                │
+                ▼ (UDP packets → Miracast sink)
+```
 
-2. **Device Discovery**:
-   - Discovery Module finds Miracast devices on the network
-   - Device Selector displays available devices to the user
+## Threading Model
 
-3. **Casting Session**:
-   - User selects a target device
-   - Casting Module establishes connection with the device
-   - Capture Module provides screen/window content
-   - Content is streamed to the target device
+| Operation | Thread | IPC Mechanism |
+|-----------|--------|---------------|
+| UI rendering | Main (GTK) | — |
+| P2P discovery | Daemon thread | `GLib.idle_add()` for signals |
+| Casting session | Daemon thread | `threading.Event` for stop, `GLib.idle_add()` for signals |
+| GStreamer streaming | Subprocess (separate process) | `Popen.poll()` for health check |
+| Config/History I/O | Main thread | Synchronous file I/O |
 
-4. **Session Management**:
-   - Casting statistics are collected during the session
-   - When the session ends, statistics are saved to the History Module
-   - History View displays session history and statistics
+## System Dependencies
 
-## Technology Stack
-
-- **UI Framework**: GTK 4 with libadwaita
-- **Streaming**: GStreamer
-- **Network Discovery**: Wi-Fi Direct via wpa_supplicant
-- **Configuration**: JSON-based configuration
-- **Logging**: Python logging module
+| Tool | Used for | Package |
+|------|----------|---------|
+| `wpa_cli` | P2P discovery and connection | `wpasupplicant` |
+| `gst-launch-1.0` | Video capture and streaming | `gstreamer1.0-tools` |
+| `xprop` | X11 window enumeration | `x11-utils` |
+| `ip` | Network interface/neighbor queries | `iproute2` (preinstalled) |
 
 ## Security Considerations
 
-- WPA2 security for Wi-Fi Direct connections
-- Proper error handling and input validation
-- Secure storage of configuration data
+- Wi-Fi Direct P2P connections use WPA2 (enforced by wpa_supplicant)
+- Application requires root for `wpa_cli` access (P2P operations)
+- Config files stored with default user permissions
+- GStreamer runs as subprocess (inherits root context when run with sudo)
 
 ## Fault Tolerance
 
-- Graceful handling of connection failures
-- Recovery from streaming errors
-- Comprehensive logging for debugging
+- **Discovery errors**: Emitted as `discovery-error` signal, UI shows error
+- **Connection timeout**: Configurable (default 30s), raises RuntimeError
+- **GStreamer crash**: Detected via `poll()`, emits `casting-error` signal
+- **P2P disconnection**: Cleaned up in `stop_casting()` and on error paths
+- **Service mode**: systemd `Restart=on-failure` with 5s delay

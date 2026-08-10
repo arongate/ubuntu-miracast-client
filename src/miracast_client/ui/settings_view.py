@@ -331,8 +331,8 @@ class SettingsView(Gtk.Box):
                 transient_for=self.get_root(),
                 heading="Settings Saved",
                 body="Your settings have been saved successfully.",
-                buttons=["OK"],
             )
+            dialog.add_response("ok", "OK")
             dialog.present()
 
             logger.info("Settings saved successfully")
@@ -342,8 +342,8 @@ class SettingsView(Gtk.Box):
                 transient_for=self.get_root(),
                 heading="Error",
                 body=f"Failed to save settings: {str(e)}",
-                buttons=["OK"],
             )
+            dialog.add_response("ok", "OK")
             dialog.present()
 
             logger.error(f"Failed to save settings: {e}")
@@ -368,8 +368,8 @@ class SettingsView(Gtk.Box):
                 transient_for=self.get_root(),
                 heading="Service Error",
                 body=f"Failed to change service state: {str(e)}",
-                buttons=["OK"],
             )
+            dialog.add_response("ok", "OK")
             dialog.present()
 
             return True  # Prevent the switch from changing state
@@ -388,8 +388,8 @@ class SettingsView(Gtk.Box):
                 transient_for=self.get_root(),
                 heading="Service Error",
                 body=f"Failed to start service: {str(e)}",
-                buttons=["OK"],
             )
+            dialog.add_response("ok", "OK")
             dialog.present()
 
     def _on_stop_service_clicked(self, button):
@@ -406,8 +406,8 @@ class SettingsView(Gtk.Box):
                 transient_for=self.get_root(),
                 heading="Service Error",
                 body=f"Failed to stop service: {str(e)}",
-                buttons=["OK"],
             )
+            dialog.add_response("ok", "OK")
             dialog.present()
 
     def _update_service_controls(self):
@@ -439,16 +439,16 @@ class SettingsView(Gtk.Box):
             transient_for=self.get_root(),
             heading="Clear History",
             body="Are you sure you want to clear all casting history?",
-            buttons=["Cancel", "Clear"],
         )
-
-        dialog.set_response_appearance("Clear", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.add_response("cancel", "Cancel")
+        dialog.add_response("clear", "Clear")
+        dialog.set_response_appearance("clear", Adw.ResponseAppearance.DESTRUCTIVE)
         dialog.connect("response", self._on_clear_history_confirmed)
         dialog.present()
 
     def _on_clear_history_confirmed(self, dialog, response):
         """Handle clear history confirmation."""
-        if response == "Clear":
+        if response == "clear":
             try:
                 from miracast_client.history import SessionHistory
 
@@ -460,8 +460,8 @@ class SettingsView(Gtk.Box):
                     transient_for=self.get_root(),
                     heading="History Cleared",
                     body="Your casting history has been cleared.",
-                    buttons=["OK"],
                 )
+                success_dialog.add_response("ok", "OK")
                 success_dialog.present()
 
                 logger.info("Casting history cleared")
@@ -473,6 +473,6 @@ class SettingsView(Gtk.Box):
                     transient_for=self.get_root(),
                     heading="Error",
                     body=f"Failed to clear history: {str(e)}",
-                    buttons=["OK"],
                 )
+                error_dialog.add_response("ok", "OK")
                 error_dialog.present()

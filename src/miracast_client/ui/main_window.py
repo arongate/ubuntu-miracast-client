@@ -9,6 +9,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, GdkPixbuf, Gio, GLib, Gtk
 
+from miracast_client import __version__
 from miracast_client.ui.device_selector import DeviceSelector
 from miracast_client.ui.history_view import HistoryView
 from miracast_client.ui.settings_view import SettingsView
@@ -44,11 +45,17 @@ class MainWindow(Adw.ApplicationWindow):
         self._setup_ui()
         logger.info("Main window initialized")
 
+        # Connect cast manager signals for error/stop handling
+        self.cast_manager.connect("casting-error", self._on_casting_error)
+        self.cast_manager.connect("casting-stopped", self._on_casting_stopped_signal)
+
     def _setup_ui(self):
         """Set up the user interface."""
         # Set window properties
         self.set_title("Ubuntu Miracast Client")
-        self.set_default_size(800, 600)
+        self.set_default_size(800, 700)
+        self.set_size_request(400, 400)  # Minimum size
+        self.set_resizable(True)
 
         # Create header bar
         header = Adw.HeaderBar()
@@ -85,7 +92,14 @@ class MainWindow(Adw.ApplicationWindow):
         # Create main layout
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         main_box.append(header)
-        main_box.append(self.stack)
+
+        # Wrap stack in ScrolledWindow so the window can shrink below content natural height
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.set_hexpand(True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_child(self.stack)
+        main_box.append(scrolled)
 
         # Create status bar
         self.status_bar = Gtk.Label()
@@ -163,9 +177,9 @@ class MainWindow(Adw.ApplicationWindow):
             application_name="Ubuntu Miracast Client",
             application_icon="video-display",
             developer_name="Ubuntu Miracast Team",
-            version="1.0.0",
+            version=__version__,
             developers=["Ubuntu Miracast Team"],
-            copyright="© 2023 Ubuntu Miracast Team",
+            copyright="© 2024 Ubuntu Miracast Team",
             license_type=Gtk.License.MIT_X11,
             website="https://github.com/yourusername/ubuntu-miracast-client",
             issue_url="https://github.com/yourusername/ubuntu-miracast-client/issues",
@@ -180,6 +194,32 @@ class MainWindow(Adw.ApplicationWindow):
         """Handle stop cast action."""
         if self.cast_manager.is_casting():
             self._stop_casting()
+
+    def _on_casting_error(self, cast_manager, error_message):
+        """Handle casting-error signal from CastManager (e.g. unexpected stream failure)."""
+        logger.error(f"Casting error received: {error_message}")
+        self.status_bar.set_text("Casting error")
+
+        # Record session in history if we have source/device info
+        if self.selected_source and self.selected_device and cast_manager._stats:
+            self.session_history.add_session(
+                self.selected_source, self.selected_device, cast_manager._stats
+            )
+
+        error_dialog = Adw.MessageDialog(
+            transient_for=self,
+            heading="Casting Error",
+            body=f"Casting stopped due to an error: {error_message}",
+        )
+        error_dialog.add_response("ok", "OK")
+        error_dialog.present()
+
+        self.show_page(Page.HISTORY)
+
+    def _on_casting_stopped_signal(self, cast_manager, stats):
+        """Handle casting-stopped signal from CastManager."""
+        logger.info("Received casting-stopped signal")
+        self.status_bar.set_text("Ready")
 
     def _start_casting(self):
         """Start the casting session."""
@@ -196,8 +236,8 @@ class MainWindow(Adw.ApplicationWindow):
                 transient_for=self,
                 heading="Casting Error",
                 body=f"Failed to start casting: {str(e)}",
-                buttons=["OK"],
             )
+            error_dialog.add_response("ok", "OK")
             error_dialog.present()
 
     def _stop_casting(self):
@@ -218,6 +258,6 @@ class MainWindow(Adw.ApplicationWindow):
                 transient_for=self,
                 heading="Error",
                 body=f"Failed to stop casting: {str(e)}",
-                buttons=["OK"],
             )
+            error_dialog.add_response("ok", "OK")
             error_dialog.present()
