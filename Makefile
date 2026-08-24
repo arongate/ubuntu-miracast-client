@@ -1,4 +1,4 @@
-.PHONY: all clean build test lint package deb install uninstall docs help
+.PHONY: all clean build test lint format coverage changelog package deb install uninstall help
 
 # Default target
 all: build
@@ -8,54 +8,67 @@ help:
 	@echo "Ubuntu Miracast Client - Make targets:"
 	@echo "  make              Build the application"
 	@echo "  make test         Run tests"
-	@echo "  make lint         Run linting checks"
-	@echo "  make package      Build Python package"
+	@echo "  make lint         Run linting checks (ruff + mypy)"
+	@echo "  make format       Format code with ruff"
+	@echo "  make coverage     Run tests with coverage"
+	@echo "  make changelog    Generate CHANGELOG.md from git history"
+	@echo "  make package      Build Python package (sdist + wheel)"
 	@echo "  make deb          Build Debian package"
 	@echo "  make install      Install the application"
 	@echo "  make uninstall    Uninstall the application"
-	@echo "  make docs         Generate documentation"
 	@echo "  make clean        Clean build artifacts"
 
 # Build the application
 build:
-	python3 -m pip install -e .
+	uv pip install -e .
 
 # Run tests
 test:
-	./scripts/test.sh
+	uv run pytest tests/ -v
 
-# Run linting
+# Run linting (ruff check + format check + mypy)
 lint:
-	flake8 src tests
-	mypy src
-	black --check src tests
+	uv run ruff check src/ tests/
+	uv run ruff format --check src/ tests/
+	uv run mypy src/ --ignore-missing-imports
+
+# Format code with ruff
+format:
+	uv run ruff check --fix src/ tests/
+	uv run ruff format src/ tests/
+
+# Run tests with coverage
+coverage:
+	uv run pytest tests/ -v --cov=miracast_client --cov-report=html --cov-report=term
+
+# Generate changelog from conventional commits
+changelog:
+	git-cliff --config cliff.toml --output CHANGELOG.md
 
 # Build Python package
 package:
-	./scripts/build.sh
+	uv build
 
 # Build Debian package
 deb:
-	./scripts/build.sh --deb
+	dpkg-buildpackage -us -uc -b
 
 # Install the application
 install:
-	python3 -m pip install -e .
+	uv pip install -e .
 
 # Uninstall the application
 uninstall:
-	python3 -m pip uninstall -y ubuntu-miracast-client
-
-# Generate documentation
-docs:
-	mkdir -p docs/api
-	pdoc --html --output-dir docs/api src/miracast_client
+	uv pip uninstall ubuntu-miracast-client
 
 # Clean build artifacts
 clean:
-	rm -rf build/ dist/ *.egg-info/ debian/.debhelper/ debian/ubuntu-miracast-client/ debian/files debian/*.log debian/*.substvars
+	rm -rf build/ dist/ *.egg-info/ src/*.egg-info/
+	rm -rf debian/.debhelper/ debian/ubuntu-miracast-client/ debian/files debian/*.log debian/*.substvars
 	find . -name "*.pyc" -delete
 	find . -name "__pycache__" -delete
 	find . -name ".coverage" -delete
 	rm -rf htmlcov/
-	rm -rf docs/api/
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	rm -rf .ruff_cache/

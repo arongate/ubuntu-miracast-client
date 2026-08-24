@@ -17,7 +17,7 @@
 
 Report vulnerabilities via GitHub's private reporting mechanism:
 
-1. Go to https://github.com/eddypepy/ubuntu-miracast-client/security/advisories/new
+1. Go to https://github.com/arongate/ubuntu-miracast-client/security/advisories/new
 2. Fill in the vulnerability details
 3. Submit the advisory
 

@@ -55,11 +55,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/eddypepy/ubuntu-miracast-client"
-Repository = "https://github.com/eddypepy/ubuntu-miracast-client.git"
-Issues = "https://github.com/eddypepy/ubuntu-miracast-client/issues"
-Changelog = "https://github.com/eddypepy/ubuntu-miracast-client/blob/main/CHANGELOG.md"
-Documentation = "https://github.com/eddypepy/ubuntu-miracast-client/tree/main/docs"
+Homepage = "https://github.com/arongate/ubuntu-miracast-client"
+Repository = "https://github.com/arongate/ubuntu-miracast-client.git"
+Issues = "https://github.com/arongate/ubuntu-miracast-client/issues"
+Changelog = "https://github.com/arongate/ubuntu-miracast-client/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/arongate/ubuntu-miracast-client/tree/main/docs"
 
 [project.gui-scripts]
 ubuntu-miracast-client = "miracast_client.app:main"
