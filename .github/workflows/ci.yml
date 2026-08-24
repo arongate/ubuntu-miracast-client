@@ -16,7 +16,7 @@ jobs:
     name: Lint (Ruff)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Ruff
         run: pip install ruff --break-system-packages
@@ -32,7 +32,7 @@ jobs:
     name: Type Check (mypy)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -56,29 +56,31 @@ jobs:
 
   # ─── Test ───────────────────────────────────────────────────────────────────
   test:
-    name: Test
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Install system dependencies
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system libraries for PyGObject/pycairo build
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            python3-gi python3-gst-1.0 python3-venv python3-dev \
+            libgirepository-2.0-dev gcc libcairo2-dev pkg-config \
             gir1.2-gtk-4.0 gir1.2-adw-1 \
             gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
-            libgirepository-2.0-dev gcc libcairo2-dev pkg-config \
             wpasupplicant
 
-      - name: Install package
+      - name: Install package and test dependencies
         run: |
-          python3 -m venv .venv --system-site-packages
-          . .venv/bin/activate
           pip install hatchling
           pip install PyGObject pycairo
           pip install pytest pytest-cov
@@ -86,12 +88,11 @@ jobs:
 
       - name: Run tests
         run: |
-          . .venv/bin/activate
           pytest tests/ --cov=miracast_client --cov-report=xml --cov-report=term-missing -q
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage.xml
@@ -101,7 +102,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install security tools
         run: pip install bandit --break-system-packages
@@ -114,7 +115,7 @@ jobs:
     name: Commit Lint
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
