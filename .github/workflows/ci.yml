@@ -79,9 +79,10 @@ jobs:
         run: |
           python3 -m venv .venv --system-site-packages
           . .venv/bin/activate
+          pip install hatchling
           pip install PyGObject pycairo
           pip install pytest pytest-cov
-          pip install -e . --no-deps
+          pip install -e .
 
       - name: Run tests
         run: |
