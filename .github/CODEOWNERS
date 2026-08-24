@@ -1,0 +1,14 @@
+# CODEOWNERS — Ubuntu Miracast Client
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all changes require maintainer review
+* @eddypepy
+
+# CI/CD and security-sensitive files require explicit review
+.github/ @eddypepy
+SECURITY.md @eddypepy
+pyproject.toml @eddypepy
+
+# Source code
+src/ @eddypepy
+tests/ @eddypepy

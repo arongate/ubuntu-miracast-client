@@ -63,16 +63,44 @@ def _parse_wfd_subelems(wfd_hex):
         Tuple of (device_type, rtsp_port) where device_type is WFD_SOURCE/SINK/DUAL
     """
     try:
-        if not wfd_hex or len(wfd_hex) < 12:
+        if not wfd_hex or not isinstance(wfd_hex, str):
+            return None, 0
+
+        # Remove any whitespace
+        wfd_hex = wfd_hex.strip()
+
+        # Validate hex string (must be even length, only hex chars)
+        if len(wfd_hex) < 12 or len(wfd_hex) % 2 != 0:
+            return None, 0
+
+        if not all(c in "0123456789abcdefABCDEF" for c in wfd_hex):
+            logger.debug(f"Invalid hex characters in WFD subelems: {wfd_hex!r}")
             return None, 0
 
         # WFD subelement format:
         # ID(2) + Length(4) + DeviceInfo(4) + ControlPort(4) + MaxThroughput(4)
         # First subelement starts at index 0
         # ID = wfd_hex[0:2], Length = wfd_hex[2:6], DeviceInfo = wfd_hex[6:10]
+        subelement_id = int(wfd_hex[0:2], 16)
+        if subelement_id != 0:
+            # Not a Device Information subelement (ID=0), skip
+            logger.debug(f"First subelement ID is {subelement_id}, expected 0")
+            return None, 0
+
+        declared_length = int(wfd_hex[2:6], 16)
+        if declared_length < 6:
+            logger.debug(f"Subelement length {declared_length} too short (min 6)")
+            return None, 0
+
         device_info = int(wfd_hex[6:10], 16)
         device_type = device_info & 0x03
-        rtsp_port = int(wfd_hex[10:14], 16) if len(wfd_hex) >= 14 else 7236
+
+        # Parse RTSP control port with validation
+        rtsp_port = 7236  # Default per WFD spec
+        if len(wfd_hex) >= 14:
+            rtsp_port = int(wfd_hex[10:14], 16)
+            if rtsp_port == 0 or rtsp_port > 65535:
+                rtsp_port = 7236  # Fall back to default if invalid
 
         return device_type, rtsp_port
     except (ValueError, IndexError) as e:

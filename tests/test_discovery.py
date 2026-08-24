@@ -23,7 +23,7 @@ class TestParseWfdSubelems:
         # TuTuLink: 000006001100000032
         device_type, port = _parse_wfd_subelems("000006001100000032")
         assert device_type == WFD_PRIMARY_SINK
-        assert port == 0  # port is 0000
+        assert port == 7236  # port field is 0000, defaults to WFD standard port 7236
 
     def test_dual_device(self):
         # Samsung TV: 00000601131c440036

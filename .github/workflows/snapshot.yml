@@ -1,109 +1,83 @@
-name: Snapshot Build
+# Snapshot Build — Ubuntu Miracast Client
+# Builds dev packages on every push to main (source changes only).
+# Lighter than release — no signing, no PyPI publish, just build and upload.
+
+name: Snapshot
 
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '*.md'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
 
-permissions:
-  contents: write
+permissions: read-all
+
+concurrency:
+  group: snapshot-${{ github.sha }}
+  cancel-in-progress: true
+
+env:
+  GI_TYPELIB_PATH: /usr/lib/x86_64-linux-gnu/girepository-1.0
 
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    name: Build Snapshot
-
-    env:
-      GI_TYPELIB_PATH: /usr/lib/x86_64-linux-gnu/girepository-1.0
-
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libgirepository-2.0-dev libcairo2-dev pkg-config python3-dev \
-          gir1.2-gtk-4.0 gir1.2-adw-1 \
-          gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
-          wpasupplicant \
-          build-essential debhelper dh-python fakeroot
+      - uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.0
+        with:
+          enable-cache: true
 
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install PyGObject pycairo
-        pip install pytest pytest-cov build
-        pip install -e . --no-deps
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libgirepository-2.0-dev libcairo2-dev pkg-config python3-dev \
+            gir1.2-gtk-4.0 gir1.2-adw-1 \
+            gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 \
+            wpasupplicant \
+            build-essential debhelper dh-python fakeroot
 
-    - name: Run tests
-      run: |
-        pytest --cov=miracast_client tests/
+      - name: Install and test
+        run: |
+          uv sync --group test
+          uv run pytest --cov=miracast_client tests/
 
-    - name: Compute snapshot version
-      id: version
-      run: |
-        # Determine next version from conventional commits
-        SNAPSHOT_VERSION=$(python scripts/release_notes.py next-dev)
-        echo "snapshot_version=${SNAPSHOT_VERSION}" >> $GITHUB_OUTPUT
-        echo "Snapshot version: ${SNAPSHOT_VERSION}"
+      - name: Compute snapshot version
+        id: version
+        run: |
+          SNAPSHOT_VERSION=$(python scripts/release_notes.py next-dev)
+          echo "snapshot_version=${SNAPSHOT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Snapshot version: ${SNAPSHOT_VERSION}"
+          echo "${SNAPSHOT_VERSION}" > VERSION
 
-        # Patch VERSION for the build
-        echo "${SNAPSHOT_VERSION}" > VERSION
+      - name: Build Python package
+        run: uv build
 
-    - name: Build Python package
-      run: |
-        python -m build
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+        with:
+          subject-path: dist/*
 
-    - name: Build Debian package
-      run: |
-        chmod +x debian/rules
-        chmod +x debian/ubuntu-miracast-client.postinst
-        chmod +x debian/ubuntu-miracast-client.postrm
-        dpkg-buildpackage -us -uc -b || true
-        mkdir -p dist/deb
-        cp ../ubuntu-miracast-client_*.deb dist/deb/ 2>/dev/null || echo "Debian build skipped"
-
-    - name: Upload snapshot artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: snapshot-${{ steps.version.outputs.snapshot_version }}
-        path: |
-          dist/*.whl
-          dist/*.tar.gz
-          dist/deb/*.deb
-        retention-days: 7
-
-    - name: Update snapshot pre-release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v${{ steps.version.outputs.snapshot_version }}
-        name: v${{ steps.version.outputs.snapshot_version }}
-        prerelease: true
-        make_latest: false
-        files: |
-          dist/*.whl
-          dist/*.tar.gz
-          dist/deb/*.deb
-        body: |
-          ## Pre-release: v${{ steps.version.outputs.snapshot_version }}
-
-          ⚠️ **This is an automated development build from `main`. It may be unstable.**
-
-          **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-
-          ### Install
-
-          ```bash
-          pip install ubuntu_miracast_client-${{ steps.version.outputs.snapshot_version }}-py3-none-any.whl
-          ```
+      - name: Upload snapshot artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: snapshot-${{ steps.version.outputs.snapshot_version }}
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          retention-days: 7

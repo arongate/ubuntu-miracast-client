@@ -321,6 +321,14 @@ class CastManager(GObject.Object):
             self._connection.disconnect()
             self._connection = None
 
+        # Teardown RTSP session
+        if hasattr(self, "_rtsp_session") and self._rtsp_session:
+            try:
+                self._rtsp_session.teardown()
+            except Exception as e:
+                logger.warning(f"RTSP teardown error: {e}")
+            self._rtsp_session = None
+
         # Wait for thread to finish
         if self._thread:
             self._thread.join(timeout=5.0)
@@ -353,8 +361,34 @@ class CastManager(GObject.Object):
             if self._stop_event.is_set():
                 return
 
-            # Step 2: Start GStreamer streaming pipeline
-            self._start_gstreamer_pipeline()
+            # Step 2: RTSP/WFD session negotiation (M1-M7)
+            self._rtsp_session = None
+            rtp_port = self._device.rtsp_port or 7236
+            try:
+                from miracast_client.rtsp.session import RTSPSession, SessionConfig
+
+                rtsp_config = SessionConfig(
+                    peer_ip=self._connection.peer_ip,
+                    control_port=self._device.rtsp_port or 7236,
+                    local_ip=self._connection.our_ip or "",
+                )
+                self._rtsp_session = RTSPSession(rtsp_config)
+                self._rtsp_session.establish()
+                rtp_port = self._rtsp_session.negotiated.rtp_port or rtp_port
+                logger.info(f"RTSP session established, streaming to port {rtp_port}")
+            except Exception as e:
+                # If RTSP negotiation fails, fall back to direct streaming
+                logger.warning(
+                    f"RTSP session negotiation failed ({e}), "
+                    f"falling back to direct streaming on port {rtp_port}"
+                )
+                self._rtsp_session = None
+
+            if self._stop_event.is_set():
+                return
+
+            # Step 3: Start GStreamer streaming pipeline
+            self._start_gstreamer_pipeline(rtp_port=rtp_port)
 
         except Exception as e:
             logger.error(f"Casting error: {e}")
@@ -362,12 +396,19 @@ class CastManager(GObject.Object):
             self._casting = False
 
             # Clean up on error
+            if hasattr(self, "_rtsp_session") and self._rtsp_session:
+                self._rtsp_session.close()
+                self._rtsp_session = None
             if self._connection:
                 self._connection.disconnect()
                 self._connection = None
 
-    def _start_gstreamer_pipeline(self):
-        """Start the real GStreamer streaming pipeline."""
+    def _start_gstreamer_pipeline(self, rtp_port=None):
+        """Start the real GStreamer streaming pipeline.
+
+        Args:
+            rtp_port: Target UDP port for RTP streaming (negotiated via RTSP, or default).
+        """
         # Get quality settings from config
         quality = self.config.get("streaming", "video_quality", "High")
         frame_rate = self.config.get("streaming", "frame_rate", 30)
@@ -378,7 +419,7 @@ class CastManager(GObject.Object):
 
         # Determine target IP and port
         target_ip = self._connection.peer_ip
-        target_port = self._device.rtsp_port or 7236
+        target_port = rtp_port or self._device.rtsp_port or 7236
 
         logger.info(
             f"Starting GStreamer pipeline: {quality} ({bitrate_kbps} kbps) "

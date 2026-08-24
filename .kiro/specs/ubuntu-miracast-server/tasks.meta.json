@@ -1,0 +1,376 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create project directory structure and build files": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370548156
+      },
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370587049
+      },
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786371660308
+      }
+    ],
+    "1.2 Create core utility and shared helpers": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370549372
+      },
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786371667238
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375748019
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786378304370
+      }
+    ],
+    "2.1 Implement IncomingConnection data model": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370550129
+      },
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786371668210
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375748773
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786378305849
+      }
+    ],
+    "2.2 Implement ReceiverStats and SourceInfo data models": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370550425
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375708714
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786378313149
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786379532143
+      }
+    ],
+    "3.1 Implement ConfigManager": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370550702
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375709654
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786378314000
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786379533509
+      }
+    ],
+    "4.1 Implement ServerSessionHistory": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370551024
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375709852
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786379542645
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370551321
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375710615
+      }
+    ],
+    "6.1 Implement MiracastAdvertiser": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370551618
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375711566
+      }
+    ],
+    "7.1 Implement ConnectionHandler": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370551915
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375711936
+      }
+    ],
+    "8.1 Implement RTSP message parsing and generation": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370552238
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375712674
+      }
+    ],
+    "8.2 Implement MiracastReceiver core": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370552559
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375713287
+      }
+    ],
+    "8.3 Implement GStreamer receive pipeline construction": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370552835
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375713961
+      }
+    ],
+    "8.4 Implement stream monitoring and error recovery": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370553190
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375714500
+      }
+    ],
+    "9. Checkpoint - Ensure all core module tests pass": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370553416
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375715200
+      }
+    ],
+    "10.1 Implement MainWindow and application entry point": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370553783
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375715857
+      }
+    ],
+    "10.2 Implement DisplayView": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370554569
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375716732
+      }
+    ],
+    "10.3 Implement SessionsView": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370555183
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375717483
+      }
+    ],
+    "10.4 Implement SettingsView": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370556215
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375717882
+      }
+    ],
+    "11.1 Implement ServerServiceManager and headless mode": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370556575
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375719033
+      }
+    ],
+    "12.1 Implement graceful shutdown and resource cleanup": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370557173
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375719410
+      }
+    ],
+    "13. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370557485
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375720038
+      }
+    ],
+    "14.1 Implement security validation in utils": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370558097
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375721215
+      }
+    ],
+    "15.1 Create Debian packaging files": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370558652
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375722209
+      }
+    ],
+    "16.1 Wire all components together in app.py": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370559669
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375722878
+      }
+    ],
+    "17. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "b9c5e8a8-05d0-42b0-8dd6-eca0f55509c2",
+        "chatSessionId": "sess_b0844429-595b-4541-a07e-8eee3b1a1ad5",
+        "timestamp": 1786370559968
+      },
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786375723570
+      }
+    ],
+    "1. Project scaffolding and build configuration": [
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786378305012
+      }
+    ],
+    "2. Data models with validation": [
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786379533045
+      }
+    ],
+    "3. Configuration management": [
+      {
+        "executionId": "c747dd41-3297-47d9-ad03-f69ee24eaeb4",
+        "chatSessionId": "sess_91081a39-5f08-4ddd-802d-ff859194cd57",
+        "timestamp": 1786379534818
+      }
+    ]
+  }
+}
