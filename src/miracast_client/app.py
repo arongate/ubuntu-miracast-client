@@ -4,7 +4,6 @@ Main application module for Ubuntu Miracast Client.
 """
 
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -12,7 +11,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, Gtk
+from gi.repository import Adw, Gio
 
 from miracast_client.casting import CastManager
 from miracast_client.config import Config

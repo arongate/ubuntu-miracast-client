@@ -67,17 +67,17 @@ class SessionState(enum.Enum):
     """WFD RTSP session states."""
 
     INIT = "init"
-    M1_SENT = "m1_sent"           # OPTIONS sent to sink
-    M2_RECEIVED = "m2_received"   # OPTIONS received from sink (responded)
-    M3_SENT = "m3_sent"           # GET_PARAMETER sent
-    M4_SENT = "m4_sent"           # SET_PARAMETER sent
-    M5_SENT = "m5_sent"           # Trigger SETUP sent
-    M6_RECEIVED = "m6_received"   # SETUP received from sink (responded)
-    M7_RECEIVED = "m7_received"   # PLAY received from sink (responded)
-    STREAMING = "streaming"       # Active media streaming
-    TEARDOWN = "teardown"         # Teardown in progress
-    DONE = "done"                 # Session ended
-    ERROR = "error"               # Unrecoverable error
+    M1_SENT = "m1_sent"  # OPTIONS sent to sink
+    M2_RECEIVED = "m2_received"  # OPTIONS received from sink (responded)
+    M3_SENT = "m3_sent"  # GET_PARAMETER sent
+    M4_SENT = "m4_sent"  # SET_PARAMETER sent
+    M5_SENT = "m5_sent"  # Trigger SETUP sent
+    M6_RECEIVED = "m6_received"  # SETUP received from sink (responded)
+    M7_RECEIVED = "m7_received"  # PLAY received from sink (responded)
+    STREAMING = "streaming"  # Active media streaming
+    TEARDOWN = "teardown"  # Teardown in progress
+    DONE = "done"  # Session ended
+    ERROR = "error"  # Unrecoverable error
 
 
 @dataclass
@@ -107,8 +107,8 @@ class NegotiatedParams:
     selected_audio_codec: str = "LPCM"
 
     # Transport (from M6 SETUP)
-    rtp_port: int = 0           # UDP port to stream to
-    rtsp_session_id: str = ""   # RTSP session identifier
+    rtp_port: int = 0  # UDP port to stream to
+    rtsp_session_id: str = ""  # RTSP session identifier
 
 
 class RTSPSession:
@@ -268,9 +268,7 @@ class RTSPSession:
 
     def _connect(self) -> None:
         """Establish TCP connection to sink's RTSP control port."""
-        logger.info(
-            f"Connecting to {self.config.peer_ip}:{self.config.control_port}"
-        )
+        logger.info(f"Connecting to {self.config.peer_ip}:{self.config.control_port}")
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.settimeout(self.config.connect_timeout)
         try:
@@ -339,8 +337,10 @@ class RTSPSession:
         # Parse sink capabilities from response body
         sink_params = WFDParameters.parse_body(response.body)
         self.negotiated.sink_capabilities = sink_params
-        logger.info(f"M3: Sink capabilities received (RTP port: "
-                    f"{sink_params.client_rtp_ports.port0 if sink_params.client_rtp_ports else 'unknown'})")
+        logger.info(
+            f"M3: Sink capabilities received (RTP port: "
+            f"{sink_params.client_rtp_ports.port0 if sink_params.client_rtp_ports else 'unknown'})"
+        )
 
     def _do_m4_set_parameter(self) -> None:
         """M4: Source → Sink: SET_PARAMETER (set session parameters)."""
@@ -415,6 +415,7 @@ class RTSPSession:
 
         # Generate session ID
         import uuid
+
         session_id = uuid.uuid4().hex[:16]
         self.negotiated.rtsp_session_id = session_id
 
@@ -422,8 +423,7 @@ class RTSPSession:
         response = RTSPResponse.ok(request.cseq or 0)
         response.headers["Session"] = f"{session_id};timeout={WFD_SESSION_TIMEOUT}"
         response.headers["Transport"] = (
-            f"RTP/AVP/UDP;unicast;client_port={rtp_port};"
-            f"server_port={rtp_port}"
+            f"RTP/AVP/UDP;unicast;client_port={rtp_port};server_port={rtp_port}"
         )
         self._send(response.serialize())
         self._set_state(SessionState.M6_RECEIVED)
@@ -449,9 +449,7 @@ class RTSPSession:
     def _start_keepalive(self) -> None:
         """Start the keep-alive thread (M14: GET_PARAMETER every 15s)."""
         self._keepalive_stop.clear()
-        self._keepalive_thread = threading.Thread(
-            target=self._keepalive_loop, daemon=True
-        )
+        self._keepalive_thread = threading.Thread(target=self._keepalive_loop, daemon=True)
         self._keepalive_thread.start()
 
     def _stop_keepalive(self) -> None:
@@ -622,9 +620,7 @@ class RTSPSession:
     # Helpers
     # ─────────────────────────────────────────────────────────
 
-    def _select_video_format(
-        self, sink_caps: WFDParameters | None
-    ) -> tuple[int, int, int]:
+    def _select_video_format(self, sink_caps: WFDParameters | None) -> tuple[int, int, int]:
         """Select the best video format compatible with the sink.
 
         Returns (width, height, fps) tuple.
@@ -645,8 +641,13 @@ class RTSPSession:
             if fmt.interlaced:
                 continue
             pixels = fmt.width * fmt.height
-            if pixels >= best[0] * best[1] and fmt.fps >= best[2] and pixels <= 1920 * 1080 and fmt.fps <= 60:
-                    best = (fmt.width, fmt.height, fmt.fps)
+            if (
+                pixels >= best[0] * best[1]
+                and fmt.fps >= best[2]
+                and pixels <= 1920 * 1080
+                and fmt.fps <= 60
+            ):
+                best = (fmt.width, fmt.height, fmt.fps)
 
         return best
 

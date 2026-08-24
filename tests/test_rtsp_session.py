@@ -489,16 +489,12 @@ class TestRTSPSessionHelpers:
 
     def test_parse_transport_port_standard(self):
         """Parse standard transport header."""
-        port = RTSPSession._parse_transport_port(
-            "RTP/AVP/UDP;unicast;client_port=19000"
-        )
+        port = RTSPSession._parse_transport_port("RTP/AVP/UDP;unicast;client_port=19000")
         assert port == 19000
 
     def test_parse_transport_port_range(self):
         """Parse transport header with port range."""
-        port = RTSPSession._parse_transport_port(
-            "RTP/AVP/UDP;unicast;client_port=5004-5005"
-        )
+        port = RTSPSession._parse_transport_port("RTP/AVP/UDP;unicast;client_port=5004-5005")
         assert port == 5004
 
     def test_parse_transport_port_missing(self):
@@ -508,9 +504,7 @@ class TestRTSPSessionHelpers:
 
     def test_parse_transport_port_invalid(self):
         """Invalid port value returns default."""
-        port = RTSPSession._parse_transport_port(
-            "RTP/AVP/UDP;unicast;client_port=abc"
-        )
+        port = RTSPSession._parse_transport_port("RTP/AVP/UDP;unicast;client_port=abc")
         assert port == 19000
 
     def test_select_video_format_with_caps(self):

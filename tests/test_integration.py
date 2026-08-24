@@ -1,18 +1,15 @@
 """Integration tests for Ubuntu Miracast Client."""
 
-import json
 import tempfile
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from miracast_client.capture import CaptureSource, WindowSource
+from miracast_client.capture import CaptureSource
 from miracast_client.casting import CastingStats, CastManager
 from miracast_client.config import Config
-from miracast_client.discovery import MiracastDevice, MiracastDiscovery, WFD_PRIMARY_SINK
-from miracast_client.history import SessionHistory, SessionRecord
+from miracast_client.discovery import WFD_PRIMARY_SINK, MiracastDevice, MiracastDiscovery
+from miracast_client.history import SessionHistory
 
 
 class TestCastingLifecycle:
@@ -43,8 +40,10 @@ class TestCastingLifecycle:
 
         # Mock WifiDirectConnection to simulate a successful connection
         # and a subprocess Popen that "runs" until stopped
-        with patch("miracast_client.casting.WifiDirectConnection") as mock_conn_cls, \
-             patch("miracast_client.casting.subprocess.Popen") as mock_popen:
+        with (
+            patch("miracast_client.casting.WifiDirectConnection") as mock_conn_cls,
+            patch("miracast_client.casting.subprocess.Popen") as mock_popen,
+        ):
             mock_conn = MagicMock()
             mock_conn.connect.return_value = True
             mock_conn.peer_ip = "192.168.49.1"
@@ -62,6 +61,7 @@ class TestCastingLifecycle:
 
             # Give the thread time to establish "connection" and start "streaming"
             import time
+
             time.sleep(0.5)
 
             assert manager.is_casting() is True
@@ -87,8 +87,12 @@ class TestCastingWithHistory:
 
             source = CaptureSource(id="screen-0", name="Screen 1", description="1920x1080")
             device = MiracastDevice(
-                id="test-device", name="Test TV", address="aa:bb:cc:dd:ee:ff",
-                model="TV", signal_strength=80, wfd_type=WFD_PRIMARY_SINK,
+                id="test-device",
+                name="Test TV",
+                address="aa:bb:cc:dd:ee:ff",
+                model="TV",
+                signal_strength=80,
+                wfd_type=WFD_PRIMARY_SINK,
             )
             stats = CastingStats(
                 start_time=datetime.now(),
@@ -151,8 +155,12 @@ class TestDiscoveryLifecycle:
         discovery = MiracastDiscovery(timeout=1, p2p_interface="p2p-dev-test")
 
         device = MiracastDevice(
-            id="test-1", name="TV", address="aa:bb:cc:dd:ee:ff",
-            model="TV", signal_strength=80, wfd_type=WFD_PRIMARY_SINK,
+            id="test-1",
+            name="TV",
+            address="aa:bb:cc:dd:ee:ff",
+            model="TV",
+            signal_strength=80,
+            wfd_type=WFD_PRIMARY_SINK,
         )
         discovery._devices["test-1"] = device
 
@@ -170,8 +178,12 @@ class TestSessionRecordPersistenceRoundtrip:
 
             source = CaptureSource(id="screen-0", name="Screen 1", description="1920x1080")
             device = MiracastDevice(
-                id="device-1", name="Samsung TV", address="aa:bb:cc:dd:ee:ff",
-                model="QE65Q70", signal_strength=70, wfd_type=WFD_PRIMARY_SINK,
+                id="device-1",
+                name="Samsung TV",
+                address="aa:bb:cc:dd:ee:ff",
+                model="QE65Q70",
+                signal_strength=70,
+                wfd_type=WFD_PRIMARY_SINK,
             )
             stats = CastingStats(
                 start_time=datetime(2026, 8, 10, 12, 0, 0),
@@ -205,10 +217,13 @@ class TestSessionRecordPersistenceRoundtrip:
             history = SessionHistory(history_path=str(history_path))
 
             for i in range(5):
-                source = CaptureSource(id=f"screen-{i}", name=f"Screen {i+1}", description="")
+                source = CaptureSource(id=f"screen-{i}", name=f"Screen {i + 1}", description="")
                 device = MiracastDevice(
-                    id=f"device-{i}", name=f"TV {i+1}", address=f"aa:bb:cc:dd:ee:{i:02x}",
-                    model="TV", signal_strength=80,
+                    id=f"device-{i}",
+                    name=f"TV {i + 1}",
+                    address=f"aa:bb:cc:dd:ee:{i:02x}",
+                    model="TV",
+                    signal_strength=80,
                 )
                 stats = CastingStats(
                     start_time=datetime.now(),

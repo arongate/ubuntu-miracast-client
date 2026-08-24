@@ -126,7 +126,7 @@ def _get_real_windows():
     Returns:
         List of WindowSource objects for real visible windows.
     """
-    windows = []
+    windows: list[dict] = []
 
     try:
         # Get client window list from root window
@@ -192,12 +192,14 @@ def _get_real_windows():
                 # Determine icon name from app class
                 icon_name = app_name.lower().replace(" ", "-")
 
-                windows.append(WindowSource(
-                    window_id=wid,
-                    title=title,
-                    app_name=app_name,
-                    icon_name=icon_name,
-                ))
+                windows.append(
+                    WindowSource(
+                        window_id=wid,
+                        title=title,
+                        app_name=app_name,
+                        icon_name=icon_name,
+                    )
+                )
 
             except (ValueError, subprocess.TimeoutExpired) as e:
                 logger.debug(f"Error processing window {wid_str}: {e}")

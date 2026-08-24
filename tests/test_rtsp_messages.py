@@ -21,12 +21,7 @@ class TestRTSPRequestParsing:
 
     def test_parse_options_request(self):
         """Parse a standard M1 OPTIONS request."""
-        raw = (
-            b"OPTIONS * RTSP/1.0\r\n"
-            b"CSeq: 1\r\n"
-            b"Require: org.wfa.wfd1.0\r\n"
-            b"\r\n"
-        )
+        raw = b"OPTIONS * RTSP/1.0\r\nCSeq: 1\r\nRequire: org.wfa.wfd1.0\r\n\r\n"
         req = RTSPRequest.parse(raw)
         assert req.method == RTSPMethod.OPTIONS
         assert req.uri == "*"
@@ -139,12 +134,7 @@ class TestRTSPRequestParsing:
 
     def test_session_id_with_timeout(self):
         """Session header with timeout parameter."""
-        raw = (
-            b"PLAY rtsp://x/wfd1.0 RTSP/1.0\r\n"
-            b"CSeq: 1\r\n"
-            b"Session: deadbeef;timeout=30\r\n"
-            b"\r\n"
-        )
+        raw = b"PLAY rtsp://x/wfd1.0 RTSP/1.0\r\nCSeq: 1\r\nSession: deadbeef;timeout=30\r\n\r\n"
         req = RTSPRequest.parse(raw)
         assert req.session_id == "deadbeef"
 
@@ -284,7 +274,9 @@ class TestRTSPResponseSerialization:
     def test_serialize_with_body(self):
         """Serialize response with body."""
         resp = RTSPResponse.ok(cseq=3)
-        resp.body = "wfd_video_formats: 00 00 01 02 000000A1 00000000 00000000 00 0000 0000 00 none none"
+        resp.body = (
+            "wfd_video_formats: 00 00 01 02 000000A1 00000000 00000000 00 0000 0000 00 none none"
+        )
         data = resp.serialize()
         text = data.decode("utf-8")
         assert "Content-Length:" in text

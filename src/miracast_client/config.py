@@ -33,7 +33,7 @@ class Config:
         """Load configuration from file or create default."""
         if self.config_path.exists():
             try:
-                with open(self.config_path, "r") as f:
+                with open(self.config_path) as f:
                     return json.load(f)
             except Exception as e:
                 logger.error(f"Failed to load config: {e}")

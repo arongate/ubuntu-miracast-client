@@ -9,6 +9,8 @@ import uuid
 import gi
 
 gi.require_version("GLib", "2.0")
+import contextlib
+
 from gi.repository import GLib, GObject
 
 logger = logging.getLogger(__name__)
@@ -111,8 +113,18 @@ def _parse_wfd_subelems(wfd_hex):
 class MiracastDevice(GObject.Object):
     """Represents a discovered Miracast device."""
 
-    def __init__(self, id, name, address, model, signal_strength,
-                 manufacturer="", wfd_type=None, rtsp_port=7236, p2p_interface=None):
+    def __init__(
+        self,
+        id,
+        name,
+        address,
+        model,
+        signal_strength,
+        manufacturer="",
+        wfd_type=None,
+        rtsp_port=7236,
+        p2p_interface=None,
+    ):
         super().__init__()
         self.id = id
         self.name = name
@@ -148,9 +160,8 @@ class MiracastDevice(GObject.Object):
             id=device_info.get("p2p_dev_addr", str(uuid.uuid4())),
             name=device_info.get("device_name", "Unknown Device"),
             address=device_info.get("p2p_dev_addr", "00:00:00:00:00:00"),
-            model=device_info.get("model_name", "").strip() or device_info.get(
-                "pri_dev_type", "Unknown"
-            ),
+            model=device_info.get("model_name", "").strip()
+            or device_info.get("pri_dev_type", "Unknown"),
             signal_strength=signal_strength,
             manufacturer=device_info.get("manufacturer", "").strip(),
             wfd_type=wfd_type,
@@ -309,7 +320,7 @@ class MiracastDiscovery(GObject.Object):
         logger.info("P2P find started, polling for peers...")
 
         start_time = time.time()
-        known_peers = set()
+        known_peers: set[str] = set()
 
         while self._running:
             # Check timeout
@@ -417,8 +428,13 @@ class MiracastDiscovery(GObject.Object):
 
             result = subprocess.run(
                 [
-                    "sudo", "wpa_cli", "-i", self._p2p_interface,
-                    "wfd_subelem_set", "0", wfd_subelems,
+                    "sudo",
+                    "wpa_cli",
+                    "-i",
+                    self._p2p_interface,
+                    "wfd_subelem_set",
+                    "0",
+                    wfd_subelems,
                 ],
                 capture_output=True,
                 text=True,
@@ -432,14 +448,12 @@ class MiracastDiscovery(GObject.Object):
         """Auto-stop discovery after timeout (called on main thread via idle_add)."""
         if self._running:
             self._running = False
-            try:
+            with contextlib.suppress(Exception):
                 subprocess.run(
                     ["sudo", "wpa_cli", "-i", self._p2p_interface, "p2p_stop_find"],
                     capture_output=True,
                     text=True,
                     timeout=5,
                 )
-            except Exception:
-                pass
             self.emit("discovery-stopped")
             logger.info("Discovery auto-stopped after timeout")

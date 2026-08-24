@@ -1,15 +1,14 @@
 """Tests for the casting module."""
 
-import time
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from miracast_client.casting import (
+    QUALITY_BITRATES,
     CastingStats,
     CastManager,
-    QUALITY_BITRATES,
     WifiDirectConnection,
 )
 

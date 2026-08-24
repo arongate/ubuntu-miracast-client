@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from miracast_client.capture import (
     CaptureSource,
     ScreenSource,
@@ -121,7 +119,9 @@ class TestWindowSource:
     """Tests for WindowSource class."""
 
     def test_creation_with_all_fields(self):
-        source = WindowSource(window_id=0x1e00004, title="Firefox", app_name="Firefox", icon_name="firefox")
+        source = WindowSource(
+            window_id=0x1E00004, title="Firefox", app_name="Firefox", icon_name="firefox"
+        )
         assert source.id == "window-31457284"
         assert source.name == "Firefox"
         assert source.app_name == "Firefox"
@@ -133,7 +133,7 @@ class TestWindowSource:
         assert source.icon == "application-x-executable"
 
     def test_start_capture_returns_gstreamer_pipeline(self):
-        source = WindowSource(window_id=0x1e00004, title="Firefox", app_name="Firefox")
+        source = WindowSource(window_id=0x1E00004, title="Firefox", app_name="Firefox")
         pipeline = source.start_capture()
 
         assert "ximagesrc" in pipeline
@@ -142,7 +142,7 @@ class TestWindowSource:
         assert "videoconvert" in pipeline
 
     def test_start_capture_custom_framerate(self):
-        source = WindowSource(window_id=0x1e00004, title="Firefox", app_name="Firefox")
+        source = WindowSource(window_id=0x1E00004, title="Firefox", app_name="Firefox")
         pipeline = source.start_capture(framerate=24)
         assert "framerate=24/1" in pipeline
 
@@ -163,7 +163,7 @@ class TestGetRealWindows:
         mock_run.side_effect = [
             MagicMock(
                 returncode=0,
-                stdout='_NET_CLIENT_LIST(WINDOW): window id # 0x1e00004, 0x2000004\n',
+                stdout="_NET_CLIENT_LIST(WINDOW): window id # 0x1e00004, 0x2000004\n",
             ),
             # First window xprop
             MagicMock(
@@ -171,7 +171,7 @@ class TestGetRealWindows:
                 stdout=(
                     'WM_NAME(UTF8_STRING) = "VS Code"\n'
                     'WM_CLASS(STRING) = "code", "Code"\n'
-                    '_NET_WM_PID(CARDINAL) = 1234\n'
+                    "_NET_WM_PID(CARDINAL) = 1234\n"
                 ),
             ),
             # Second window xprop
@@ -180,7 +180,7 @@ class TestGetRealWindows:
                 stdout=(
                     'WM_NAME(UTF8_STRING) = "Google Chrome"\n'
                     'WM_CLASS(STRING) = "google-chrome", "Google-chrome"\n'
-                    '_NET_WM_PID(CARDINAL) = 5678\n'
+                    "_NET_WM_PID(CARDINAL) = 5678\n"
                 ),
             ),
         ]
@@ -189,7 +189,7 @@ class TestGetRealWindows:
         assert len(windows) == 2
         assert windows[0].name == "VS Code"
         assert windows[0].app_name == "Code"
-        assert windows[0].window_id == 0x1e00004
+        assert windows[0].window_id == 0x1E00004
         assert windows[1].name == "Google Chrome"
         assert windows[1].app_name == "Google-chrome"
 
@@ -199,14 +199,14 @@ class TestGetRealWindows:
         mock_run.side_effect = [
             MagicMock(
                 returncode=0,
-                stdout='_NET_CLIENT_LIST(WINDOW): window id # 0x3600008\n',
+                stdout="_NET_CLIENT_LIST(WINDOW): window id # 0x3600008\n",
             ),
             MagicMock(
                 returncode=0,
                 stdout=(
                     'WM_NAME(STRING) = "Desktop Icons 1"\n'
                     'WM_CLASS(STRING) = "gjs", "Gjs"\n'
-                    '_NET_WM_PID(CARDINAL) = 1234\n'
+                    "_NET_WM_PID(CARDINAL) = 1234\n"
                 ),
             ),
         ]
@@ -267,7 +267,7 @@ class TestGetAvailableSources:
         mock_display.get_monitors.return_value = MagicMock(get_n_items=MagicMock(return_value=0))
         mock_gdk.Display.get_default.return_value = mock_display
 
-        sources = get_available_sources(screen_only=True)
+        get_available_sources(screen_only=True)
         # _get_real_windows should not be called
         mock_windows.assert_not_called()
 

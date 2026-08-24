@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-
 from gi.repository import GObject
 
 from miracast_client.capture import CaptureSource
@@ -129,7 +128,7 @@ class SessionHistory:
             return []
 
         try:
-            with open(self.history_path, "r") as f:
+            with open(self.history_path) as f:
                 data = json.load(f)
 
             sessions = []

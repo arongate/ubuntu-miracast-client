@@ -1,16 +1,13 @@
 """Tests for the discovery module."""
 
-import threading
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from miracast_client.discovery import (
-    MiracastDevice,
-    MiracastDiscovery,
     WFD_DUAL,
     WFD_PRIMARY_SINK,
     WFD_SOURCE,
+    MiracastDevice,
+    MiracastDiscovery,
     _find_p2p_interface,
     _parse_wfd_subelems,
 )
@@ -29,11 +26,11 @@ class TestParseWfdSubelems:
         # Samsung TV: 00000601131c440036
         device_type, port = _parse_wfd_subelems("00000601131c440036")
         assert device_type == WFD_DUAL
-        assert port == 0x1c44  # 7236
+        assert port == 0x1C44  # 7236
 
     def test_source_device(self):
         # Source: device info bits 0-1 = 00
-        device_type, port = _parse_wfd_subelems("000006001000001032")
+        device_type, _port = _parse_wfd_subelems("000006001000001032")
         assert device_type == WFD_SOURCE
 
     def test_empty_string(self):
@@ -122,8 +119,12 @@ class TestMiracastDevice:
 
     def test_type_description(self):
         device = MiracastDevice(
-            id="test", name="Test", address="aa:bb:cc:dd:ee:ff",
-            model="Model", signal_strength=50, wfd_type=WFD_PRIMARY_SINK,
+            id="test",
+            name="Test",
+            address="aa:bb:cc:dd:ee:ff",
+            model="Model",
+            signal_strength=50,
+            wfd_type=WFD_PRIMARY_SINK,
         )
         assert device.type_description == "Sink"
 
@@ -181,12 +182,20 @@ class TestMiracastDiscovery:
         discovery = MiracastDiscovery(timeout=1, p2p_interface="p2p-dev-test")
 
         sink_device = MiracastDevice(
-            id="sink1", name="TV", address="aa:bb:cc:dd:ee:01",
-            model="TV", signal_strength=80, wfd_type=WFD_PRIMARY_SINK,
+            id="sink1",
+            name="TV",
+            address="aa:bb:cc:dd:ee:01",
+            model="TV",
+            signal_strength=80,
+            wfd_type=WFD_PRIMARY_SINK,
         )
         source_device = MiracastDevice(
-            id="source1", name="Phone", address="aa:bb:cc:dd:ee:02",
-            model="Phone", signal_strength=70, wfd_type=WFD_SOURCE,
+            id="source1",
+            name="Phone",
+            address="aa:bb:cc:dd:ee:02",
+            model="Phone",
+            signal_strength=70,
+            wfd_type=WFD_SOURCE,
         )
 
         discovery._devices = {"sink1": sink_device, "source1": source_device}
@@ -200,12 +209,20 @@ class TestMiracastDiscovery:
         discovery = MiracastDiscovery(timeout=1, p2p_interface="p2p-dev-test")
 
         sink_device = MiracastDevice(
-            id="sink1", name="TV", address="aa:bb:cc:dd:ee:01",
-            model="TV", signal_strength=80, wfd_type=WFD_PRIMARY_SINK,
+            id="sink1",
+            name="TV",
+            address="aa:bb:cc:dd:ee:01",
+            model="TV",
+            signal_strength=80,
+            wfd_type=WFD_PRIMARY_SINK,
         )
         source_device = MiracastDevice(
-            id="source1", name="Phone", address="aa:bb:cc:dd:ee:02",
-            model="Phone", signal_strength=70, wfd_type=WFD_SOURCE,
+            id="source1",
+            name="Phone",
+            address="aa:bb:cc:dd:ee:02",
+            model="Phone",
+            signal_strength=70,
+            wfd_type=WFD_SOURCE,
         )
 
         discovery._devices = {"sink1": sink_device, "source1": source_device}

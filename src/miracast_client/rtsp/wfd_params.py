@@ -19,11 +19,12 @@ logger = logging.getLogger(__name__)
 # Video Format Tables (WFD Spec §4.5.4, Table 4-18)
 # ─────────────────────────────────────────────────────────────
 
+
 class VideoProfile(enum.IntEnum):
     """H.264 profiles supported by WFD."""
 
     CONSTRAINED_BASELINE = 0  # CBP — mandatory
-    CONSTRAINED_HIGH = 1      # CHP — optional
+    CONSTRAINED_HIGH = 1  # CHP — optional
 
 
 class VideoLevel(enum.IntEnum):
@@ -124,12 +125,13 @@ class VideoFormat:
 # Audio Codec Tables (WFD Spec §4.5.5)
 # ─────────────────────────────────────────────────────────────
 
+
 class AudioCodecType(enum.Enum):
     """Audio codec types supported by WFD."""
 
-    LPCM = "LPCM"    # Linear PCM — mandatory
-    AAC = "AAC"      # AAC-LC — optional
-    AC3 = "AC3"      # Dolby Digital — optional
+    LPCM = "LPCM"  # Linear PCM — mandatory
+    AAC = "AAC"  # AAC-LC — optional
+    AC3 = "AC3"  # Dolby Digital — optional
 
 
 @dataclass
@@ -201,6 +203,7 @@ class AudioCodec:
 # WFD Video Formats Parameter
 # ─────────────────────────────────────────────────────────────
 
+
 @dataclass
 class WFDVideoFormats:
     """WFD video formats parameter (wfd_video_formats).
@@ -211,16 +214,16 @@ class WFDVideoFormats:
     Reference: WFD Spec v2.3 §4.5.4, Table 4-16
     """
 
-    native: int = 0x00          # Native resolution index
+    native: int = 0x00  # Native resolution index
     preferred_display: int = 0  # 0=not supported, 1=supported
-    profile: int = 0x01         # H.264 profile bitmap (bit0=CBP, bit1=CHP)
-    level: int = 0x02           # H.264 level bitmap (bit0=3.1, bit1=3.2, bit2=4.0)
+    profile: int = 0x01  # H.264 profile bitmap (bit0=CBP, bit1=CHP)
+    level: int = 0x02  # H.264 level bitmap (bit0=3.1, bit1=3.2, bit2=4.0)
     cea_bitmap: int = 0x000000A1  # CEA resolution bitmap (default: 640x480p60 + 1280x720p30)
     vesa_bitmap: int = 0x00000000  # VESA resolution bitmap
-    hh_bitmap: int = 0x00000000    # HH resolution bitmap
-    latency: int = 0x00         # Max decoder latency (units of 5ms)
-    min_slice_size: int = 0     # Minimum slice size
-    slice_enc_params: int = 0   # Slice encoding parameters
+    hh_bitmap: int = 0x00000000  # HH resolution bitmap
+    latency: int = 0x00  # Max decoder latency (units of 5ms)
+    min_slice_size: int = 0  # Minimum slice size
+    slice_enc_params: int = 0  # Slice encoding parameters
     frame_rate_control: int = 0x00  # Frame rate control support
 
     def get_supported_resolutions(self) -> list[VideoFormat]:
@@ -229,21 +232,21 @@ class WFDVideoFormats:
 
         for bit, res in CEA_RESOLUTIONS.items():
             if self.cea_bitmap & (1 << bit):
-                formats.append(VideoFormat(
-                    width=res[0], height=res[1], fps=res[2], interlaced=res[3]
-                ))
+                formats.append(
+                    VideoFormat(width=res[0], height=res[1], fps=res[2], interlaced=res[3])
+                )
 
         for bit, res in VESA_RESOLUTIONS.items():
             if self.vesa_bitmap & (1 << bit):
-                formats.append(VideoFormat(
-                    width=res[0], height=res[1], fps=res[2], interlaced=res[3]
-                ))
+                formats.append(
+                    VideoFormat(width=res[0], height=res[1], fps=res[2], interlaced=res[3])
+                )
 
         for bit, res in HH_RESOLUTIONS.items():
             if self.hh_bitmap & (1 << bit):
-                formats.append(VideoFormat(
-                    width=res[0], height=res[1], fps=res[2], interlaced=res[3]
-                ))
+                formats.append(
+                    VideoFormat(width=res[0], height=res[1], fps=res[2], interlaced=res[3])
+                )
 
         return formats
 
@@ -311,6 +314,7 @@ class WFDVideoFormats:
 # WFD Audio Codecs Parameter
 # ─────────────────────────────────────────────────────────────
 
+
 @dataclass
 class WFDAudioCodecs:
     """WFD audio codecs parameter (wfd_audio_codecs).
@@ -356,14 +360,17 @@ class WFDAudioCodecs:
     @classmethod
     def default_source(cls) -> WFDAudioCodecs:
         """Default audio codecs supported by a WFD source (LPCM mandatory)."""
-        return cls(codecs=[
-            AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0),  # 44.1 + 48 kHz
-        ])
+        return cls(
+            codecs=[
+                AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0),  # 44.1 + 48 kHz
+            ]
+        )
 
 
 # ─────────────────────────────────────────────────────────────
 # WFD Client RTP Ports
 # ─────────────────────────────────────────────────────────────
+
 
 @dataclass
 class WFDClientRTPPorts:
@@ -376,7 +383,7 @@ class WFDClientRTPPorts:
 
     profile: str = "RTP/AVP/UDP;unicast"
     port0: int = 19000  # Primary RTP port
-    port1: int = 0      # Secondary RTP port (0 = not used)
+    port1: int = 0  # Secondary RTP port (0 = not used)
     mode: str = "play"
 
     def format_wfd(self) -> str:
@@ -423,6 +430,7 @@ class WFDClientRTPPorts:
 # ─────────────────────────────────────────────────────────────
 # WFD Trigger Method
 # ─────────────────────────────────────────────────────────────
+
 
 class WFDTriggerMethod(enum.Enum):
     """WFD trigger methods sent via SET_PARAMETER (M5, M8, M10, M12)."""
@@ -541,7 +549,7 @@ class WFDParameters:
                 native=0x00,
                 preferred_display=0x00,
                 profile=0x01,  # CBP only
-                level=0x02,    # Level 3.1
+                level=0x02,  # Level 3.1
                 cea_bitmap=0x000000A1,  # 640x480p60 + 720x480p60 + 1280x720p30
                 vesa_bitmap=0x00000000,
                 hh_bitmap=0x00000000,

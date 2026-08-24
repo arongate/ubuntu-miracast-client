@@ -1,7 +1,6 @@
 """Tests for the history module."""
 
 import json
-
 import tempfile
 import unittest
 from datetime import datetime
@@ -227,7 +226,7 @@ class TestSessionHistory(unittest.TestCase):
 
         # Verify persisted to file
         self.assertTrue(self.history_path.exists())
-        with open(self.history_path, "r") as f:
+        with open(self.history_path) as f:
             data = json.load(f)
         self.assertEqual(len(data), 1)
 
@@ -260,7 +259,7 @@ class TestSessionHistory(unittest.TestCase):
         self.assertEqual(len(history.get_sessions()), 0)
 
         # Verify file was updated
-        with open(self.history_path, "r") as f:
+        with open(self.history_path) as f:
             data = json.load(f)
         self.assertEqual(len(data), 0)
 

@@ -86,7 +86,7 @@ class ServiceManager:
             logger.info(f"Service {self.SERVICE_NAME} enabled")
         except Exception as e:
             logger.error(f"Failed to enable service: {e}")
-            raise RuntimeError(f"Failed to enable service: {e}")
+            raise RuntimeError(f"Failed to enable service: {e}") from e
 
     def disable_service(self):
         """Disable the service.
@@ -112,7 +112,7 @@ class ServiceManager:
             logger.info(f"Service {self.SERVICE_NAME} disabled")
         except Exception as e:
             logger.error(f"Failed to disable service: {e}")
-            raise RuntimeError(f"Failed to disable service: {e}")
+            raise RuntimeError(f"Failed to disable service: {e}") from e
 
     def start_service(self):
         """Start the service.
@@ -131,7 +131,7 @@ class ServiceManager:
             logger.info(f"Service {self.SERVICE_NAME} started")
         except Exception as e:
             logger.error(f"Failed to start service: {e}")
-            raise RuntimeError(f"Failed to start service: {e}")
+            raise RuntimeError(f"Failed to start service: {e}") from e
 
     def stop_service(self):
         """Stop the service.
@@ -146,7 +146,7 @@ class ServiceManager:
             logger.info(f"Service {self.SERVICE_NAME} stopped")
         except Exception as e:
             logger.error(f"Failed to stop service: {e}")
-            raise RuntimeError(f"Failed to stop service: {e}")
+            raise RuntimeError(f"Failed to stop service: {e}") from e
 
     def _create_service_file(self):
         """Create the systemd service file."""

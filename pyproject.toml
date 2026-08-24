@@ -136,8 +136,15 @@ select = [
 ]
 ignore = [
     "E501",   # line length (handled by formatter)
+    "E402",   # module-level import not at top (required for gi.require_version() pattern)
     "S603",   # subprocess call - check for execution of untrusted input (too noisy for this project)
     "S607",   # starting a process with a partial executable path
+    "ARG002", # unused method argument (GObject signal handlers have fixed signatures)
+    "RUF012", # mutable class variable (__gsignals__ is required by GObject)
+    "PTH123", # use pathlib Path.open() — low-value refactor for existing code
+    "PTH117", # use pathlib Path.stat().st_size — low-value refactor
+    "PTH100", # use pathlib Path.resolve() — low-value refactor
+    "SIM117", # combine with statements — readability preference
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -168,10 +175,6 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = ["gi", "gi.repository", "gi.repository.*"]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["dbus", "dbus.*"]
 ignore_missing_imports = true
 
 # ─────────────────────────────────────────────────────────────

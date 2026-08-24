@@ -85,7 +85,7 @@ class TestWFDVideoFormats:
         assert vf.native == 0x00
         assert vf.preferred_display == 0x00
         assert vf.profile == 0x01  # CBP
-        assert vf.level == 0x02    # Level 3.1
+        assert vf.level == 0x02  # Level 3.1
         assert vf.cea_bitmap == 0x000000A1
         assert vf.vesa_bitmap == 0x00000000
         assert vf.hh_bitmap == 0x00000000
@@ -136,8 +136,13 @@ class TestWFDVideoFormats:
     def test_format_wfd_roundtrip(self):
         """format_wfd() output can be parsed back."""
         original = WFDVideoFormats(
-            native=0x00, preferred_display=0x00, profile=0x01, level=0x02,
-            cea_bitmap=0x000000A1, vesa_bitmap=0x00000000, hh_bitmap=0x00000000,
+            native=0x00,
+            preferred_display=0x00,
+            profile=0x01,
+            level=0x02,
+            cea_bitmap=0x000000A1,
+            vesa_bitmap=0x00000000,
+            hh_bitmap=0x00000000,
         )
         text = original.format_wfd()
         parsed = WFDVideoFormats.parse_wfd(text)
@@ -248,10 +253,12 @@ class TestWFDAudioCodecs:
 
     def test_format_wfd_multiple(self):
         """Format multiple codecs."""
-        ac = WFDAudioCodecs(codecs=[
-            AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0),
-            AudioCodec(codec=AudioCodecType.AAC, modes=0x01, latency=0),
-        ])
+        ac = WFDAudioCodecs(
+            codecs=[
+                AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0),
+                AudioCodec(codec=AudioCodecType.AAC, modes=0x01, latency=0),
+            ]
+        )
         result = ac.format_wfd()
         assert "LPCM 00000003 00" in result
         assert "AAC 00000001 00" in result
@@ -377,9 +384,9 @@ class TestWFDParameters:
         """Format full parameter set."""
         params = WFDParameters(
             video_formats=WFDVideoFormats(profile=0x01, level=0x02, cea_bitmap=0xA1),
-            audio_codecs=WFDAudioCodecs(codecs=[
-                AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0)
-            ]),
+            audio_codecs=WFDAudioCodecs(
+                codecs=[AudioCodec(codec=AudioCodecType.LPCM, modes=0x03, latency=0)]
+            ),
             client_rtp_ports=WFDClientRTPPorts(port0=19000),
             content_protection="none",
         )

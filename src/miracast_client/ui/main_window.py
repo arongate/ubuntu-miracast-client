@@ -225,6 +225,8 @@ class MainWindow(Adw.ApplicationWindow):
         """Start the casting session."""
         try:
             self.cast_manager.start_casting(self.selected_source, self.selected_device)
+            if self.selected_device is None:
+                return
             self.status_bar.set_text(f"Casting to {self.selected_device.name}")
             logger.info(f"Started casting to {self.selected_device.name}")
 
@@ -235,7 +237,7 @@ class MainWindow(Adw.ApplicationWindow):
             error_dialog = Adw.MessageDialog(
                 transient_for=self,
                 heading="Casting Error",
-                body=f"Failed to start casting: {str(e)}",
+                body=f"Failed to start casting: {e!s}",
             )
             error_dialog.add_response("ok", "OK")
             error_dialog.present()
@@ -257,7 +259,7 @@ class MainWindow(Adw.ApplicationWindow):
             error_dialog = Adw.MessageDialog(
                 transient_for=self,
                 heading="Error",
-                body=f"Failed to stop casting: {str(e)}",
+                body=f"Failed to stop casting: {e!s}",
             )
             error_dialog.add_response("ok", "OK")
             error_dialog.present()

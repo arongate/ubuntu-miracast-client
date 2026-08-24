@@ -341,7 +341,7 @@ class SettingsView(Gtk.Box):
             dialog = Adw.MessageDialog(
                 transient_for=self.get_root(),
                 heading="Error",
-                body=f"Failed to save settings: {str(e)}",
+                body=f"Failed to save settings: {e!s}",
             )
             dialog.add_response("ok", "OK")
             dialog.present()
@@ -367,7 +367,7 @@ class SettingsView(Gtk.Box):
             dialog = Adw.MessageDialog(
                 transient_for=self.get_root(),
                 heading="Service Error",
-                body=f"Failed to change service state: {str(e)}",
+                body=f"Failed to change service state: {e!s}",
             )
             dialog.add_response("ok", "OK")
             dialog.present()
@@ -387,7 +387,7 @@ class SettingsView(Gtk.Box):
             dialog = Adw.MessageDialog(
                 transient_for=self.get_root(),
                 heading="Service Error",
-                body=f"Failed to start service: {str(e)}",
+                body=f"Failed to start service: {e!s}",
             )
             dialog.add_response("ok", "OK")
             dialog.present()
@@ -405,7 +405,7 @@ class SettingsView(Gtk.Box):
             dialog = Adw.MessageDialog(
                 transient_for=self.get_root(),
                 heading="Service Error",
-                body=f"Failed to stop service: {str(e)}",
+                body=f"Failed to stop service: {e!s}",
             )
             dialog.add_response("ok", "OK")
             dialog.present()
@@ -472,7 +472,7 @@ class SettingsView(Gtk.Box):
                 error_dialog = Adw.MessageDialog(
                     transient_for=self.get_root(),
                     heading="Error",
-                    body=f"Failed to clear history: {str(e)}",
+                    body=f"Failed to clear history: {e!s}",
                 )
                 error_dialog.add_response("ok", "OK")
                 error_dialog.present()

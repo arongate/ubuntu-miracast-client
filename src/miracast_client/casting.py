@@ -6,11 +6,13 @@ import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any
 
 import gi
 
 gi.require_version("GLib", "2.0")
+import contextlib
+
 from gi.repository import GLib, GObject
 
 from miracast_client.config import Config
@@ -32,7 +34,7 @@ class CastingStats:
     """Statistics for a casting session."""
 
     start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     duration: int = 0  # in seconds
     data_transferred: int = 0  # in bytes
     average_bitrate: float = 0  # in bps
@@ -76,8 +78,14 @@ class WifiDirectConnection:
         # Initiate P2P connection using PBC (Push Button Configuration)
         result = subprocess.run(
             [
-                "sudo", "wpa_cli", "-i", iface, "p2p_connect",
-                addr, "pbc", "go_intent=0",
+                "sudo",
+                "wpa_cli",
+                "-i",
+                iface,
+                "p2p_connect",
+                addr,
+                "pbc",
+                "go_intent=0",
             ],
             capture_output=True,
             text=True,
@@ -130,8 +138,14 @@ class WifiDirectConnection:
 
             # Remove the P2P group
             subprocess.run(
-                ["sudo", "wpa_cli", "-i", self.p2p_interface, "p2p_group_remove",
-                 self.group_interface or ""],
+                [
+                    "sudo",
+                    "wpa_cli",
+                    "-i",
+                    self.p2p_interface,
+                    "p2p_group_remove",
+                    self.group_interface or "",
+                ],
                 capture_output=True,
                 text=True,
                 timeout=5,
@@ -181,6 +195,7 @@ class WifiDirectConnection:
                 timeout=5,
             )
             import re
+
             ip_match = re.search(r"inet (\d+\.\d+\.\d+\.\d+)/", result.stdout)
             if ip_match:
                 our_ip = ip_match.group(1)
@@ -226,13 +241,14 @@ class CastManager(GObject.Object):
         super().__init__()
         self.config = Config()
         self._casting = False
-        self._source = None
-        self._device = None
-        self._stats = None
-        self._thread = None
+        self._source: Any = None
+        self._device: Any = None
+        self._stats: CastingStats | None = None
+        self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
-        self._gst_process = None
-        self._connection = None
+        self._gst_process: subprocess.Popen[bytes] | None = None
+        self._connection: WifiDirectConnection | None = None
+        self._rtsp_session: Any = None
 
     def is_casting(self):
         """Check if casting is active.
@@ -310,10 +326,8 @@ class CastManager(GObject.Object):
                 self._gst_process.wait(timeout=5)
             except Exception as e:
                 logger.warning(f"Error stopping GStreamer process: {e}")
-                try:
+                with contextlib.suppress(Exception):
                     self._gst_process.kill()
-                except Exception:
-                    pass
             self._gst_process = None
 
         # Disconnect Wi-Fi Direct
@@ -335,6 +349,8 @@ class CastManager(GObject.Object):
             self._thread = None
 
         # Update statistics
+        if self._stats is None:
+            return
         self._stats.end_time = datetime.now()
         self._stats.duration = int((self._stats.end_time - self._stats.start_time).total_seconds())
 
@@ -355,6 +371,8 @@ class CastManager(GObject.Object):
         """Background thread for managing the casting session."""
         try:
             # Step 1: Establish Wi-Fi Direct connection
+            if self._device is None:
+                raise RuntimeError("No device specified")
             self._connection = WifiDirectConnection(self._device)
             self._connection.connect(timeout=30)
 
@@ -368,7 +386,7 @@ class CastManager(GObject.Object):
                 from miracast_client.rtsp.session import RTSPSession, SessionConfig
 
                 rtsp_config = SessionConfig(
-                    peer_ip=self._connection.peer_ip,
+                    peer_ip=self._connection.peer_ip or "",
                     control_port=self._device.rtsp_port or 7236,
                     local_ip=self._connection.our_ip or "",
                 )
@@ -418,6 +436,8 @@ class CastManager(GObject.Object):
         bitrate_kbps = bitrate // 1000
 
         # Determine target IP and port
+        if self._connection is None or self._device is None or self._source is None:
+            raise RuntimeError("Casting not properly initialized")
         target_ip = self._connection.peer_ip
         target_port = rtp_port or self._device.rtsp_port or 7236
 
@@ -444,7 +464,7 @@ class CastManager(GObject.Object):
         logger.info(f"GStreamer pipeline: gst-launch-1.0 {pipeline}")
 
         # Launch GStreamer as subprocess
-        cmd = ["gst-launch-1.0", "-e"] + pipeline.split()
+        cmd = ["gst-launch-1.0", "-e", *pipeline.split()]
 
         try:
             self._gst_process = subprocess.Popen(
@@ -462,12 +482,14 @@ class CastManager(GObject.Object):
             raise RuntimeError(
                 "gst-launch-1.0 not found. Install gstreamer1.0-tools: "
                 "sudo apt install gstreamer1.0-tools"
-            )
+            ) from None
         except Exception as e:
-            raise RuntimeError(f"Failed to start GStreamer: {e}")
+            raise RuntimeError(f"Failed to start GStreamer: {e}") from e
 
     def _monitor_streaming(self):
         """Monitor the GStreamer process and collect stats."""
+        if self._stats is None:
+            return
         start_time = time.time()
         last_update = start_time
         estimated_bytes_per_second = 0
@@ -483,21 +505,17 @@ class CastManager(GObject.Object):
                 # Process exited
                 returncode = self._gst_process.returncode
                 stderr_output = ""
-                try:
-                    stderr_output = self._gst_process.stderr.read().decode(
-                        "utf-8", errors="replace"
-                    )
-                except Exception:
-                    pass
+                with contextlib.suppress(Exception):
+                    if self._gst_process.stderr:
+                        stderr_output = self._gst_process.stderr.read().decode(
+                            "utf-8", errors="replace"
+                        )
 
                 if returncode != 0 and not self._stop_event.is_set():
                     error_msg = f"GStreamer exited with code {returncode}"
                     if stderr_output:
                         # Get last meaningful line
-                        err_lines = [
-                            x for x in stderr_output.strip().split("\n")
-                            if x.strip()
-                        ]
+                        err_lines = [x for x in stderr_output.strip().split("\n") if x.strip()]
                         if err_lines:
                             error_msg += f": {err_lines[-1]}"
                     logger.error(error_msg)
