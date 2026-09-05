@@ -98,8 +98,9 @@ class DeviceSelector(Gtk.Box):
         scrolled.set_child(self.device_list)
         self.append(scrolled)
 
-        # Connect selection changed signal
-        self.device_selection.connect("selection-changed", self._on_selection_changed)
+        # Connect to notify::selected for reliable selection tracking.
+        # SelectionModel::selection-changed may not fire on initial auto-selection.
+        self.device_selection.connect("notify::selected", self._on_selection_changed)
 
     def _setup_device_item(self, factory, list_item):
         """Set up a device list item."""
@@ -169,6 +170,10 @@ class DeviceSelector(Gtk.Box):
         self.status_label.set_text(f"Found {self.device_model.get_n_items()} devices")
         logger.info(f"Device found: {device.name} ({device.id})")
 
+        # Enable connect button if a device is auto-selected
+        if self.device_selection.get_selected() != Gtk.INVALID_LIST_POSITION:
+            self.connect_button.set_sensitive(True)
+
     def _on_device_lost(self, discovery, device_id):
         """Handle device lost event."""
         for i in range(self.device_model.get_n_items()):
@@ -188,7 +193,7 @@ class DeviceSelector(Gtk.Box):
         else:
             self.status_label.set_text("Discovery complete — no devices found")
 
-    def _on_selection_changed(self, selection, position, n_items):
+    def _on_selection_changed(self, selection, pspec):
         """Handle device selection change."""
         self.connect_button.set_sensitive(selection.get_selected() != Gtk.INVALID_LIST_POSITION)
 

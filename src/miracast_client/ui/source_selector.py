@@ -92,8 +92,10 @@ class SourceSelector(Gtk.Box):
         scrolled.set_child(self.source_list)
         self.append(scrolled)
 
-        # Connect selection changed signal
-        self.source_selection.connect("selection-changed", self._on_selection_changed)
+        # Connect to notify::selected for reliable selection tracking.
+        # SelectionModel::selection-changed may not fire on initial auto-selection
+        # when items are first appended to an empty model.
+        self.source_selection.connect("notify::selected", self._on_selection_changed)
 
     def _setup_source_item(self, factory, list_item):
         """Set up a source list item."""
@@ -142,6 +144,7 @@ class SourceSelector(Gtk.Box):
     def _load_sources(self):
         """Load available sources based on the selected type."""
         self.source_model.remove_all()
+        self.select_button.set_sensitive(False)
 
         try:
             if self.screen_radio.get_active():
@@ -152,6 +155,10 @@ class SourceSelector(Gtk.Box):
             for source in sources:
                 self.source_model.append(source)
 
+            # Enable select button if the model auto-selected an item
+            if self.source_model.get_n_items() > 0:
+                self.select_button.set_sensitive(True)
+
             logger.info(f"Loaded {len(sources)} sources")
         except Exception as e:
             logger.error(f"Failed to load sources: {e}")
@@ -160,7 +167,7 @@ class SourceSelector(Gtk.Box):
         """Handle source type selection change."""
         self._load_sources()
 
-    def _on_selection_changed(self, selection, position, n_items):
+    def _on_selection_changed(self, selection, pspec):
         """Handle source selection change."""
         self.select_button.set_sensitive(selection.get_selected() != Gtk.INVALID_LIST_POSITION)
 
